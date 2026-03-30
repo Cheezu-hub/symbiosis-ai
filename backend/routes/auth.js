@@ -4,7 +4,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool, authenticateToken } = require('../models/database');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.warn("WARNING: JWT_SECRET is not defined in environment variables.");
+}
 
 router.post('/register', async (req, res) => {
   try {
@@ -22,12 +25,20 @@ router.post('/register', async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, company_name, industry_type, contact_email, location`,
       [companyName, industryType, location, email, phone, hashedPassword]
     );
+    
     const user = result.rows[0];
     const token = jwt.sign({ id: user.id, email: user.contact_email }, JWT_SECRET, { expiresIn: '7d' });
 
     res.status(201).json({
-      success: true, token,
-      user: { id: user.id, companyName: user.company_name, industryType: user.industry_type, email: user.contact_email, location: user.location }
+      success: true, 
+      token,
+      user: { 
+        id: user.id, 
+        companyName: user.company_name, 
+        industryType: user.industry_type, 
+        email: user.contact_email, 
+        location: user.location 
+      }
     });
   } catch (err) {
     console.error(err);
@@ -51,8 +62,15 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: user.id, email: user.contact_email }, JWT_SECRET, { expiresIn: '7d' });
     res.json({
-      success: true, token,
-      user: { id: user.id, companyName: user.company_name, industryType: user.industry_type, email: user.contact_email, location: user.location }
+      success: true, 
+      token,
+      user: { 
+        id: user.id, 
+        companyName: user.company_name, 
+        industryType: user.industry_type, 
+        email: user.contact_email, 
+        location: user.location 
+      }
     });
   } catch (err) {
     console.error(err);
@@ -68,8 +86,22 @@ router.get('/profile', authenticateToken, async (req, res) => {
        FROM industries WHERE id = $1`, [req.user.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    
     const u = result.rows[0];
-    res.json({ success: true, user: { id: u.id, companyName: u.company_name, industryType: u.industry_type, email: u.contact_email, phone: u.contact_phone, location: u.location, transportRadius: u.transport_radius_km, website: u.website, sustainabilityScore: u.sustainability_score } });
+    res.json({ 
+        success: true, 
+        user: { 
+            id: u.id, 
+            companyName: u.company_name, 
+            industryType: u.industry_type, 
+            email: u.contact_email, 
+            phone: u.contact_phone, 
+            location: u.location, 
+            transportRadius: u.transport_radius_km, 
+            website: u.website, 
+            sustainabilityScore: u.sustainability_score 
+        } 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch profile' });
@@ -89,11 +121,23 @@ router.put('/profile', authenticateToken, async (req, res) => {
         website = COALESCE($6, website),
         updated_at = CURRENT_TIMESTAMP
        WHERE id = $7
-       RETURNING id, company_name, industry_type, contact_email, contact_phone, location`,
+       RETURNING id, company_name, industry_type, contact_email, contact_phone, location, transport_radius_km`,
       [companyName, industryType, phone, location, transportRadius, website, req.user.id]
     );
+    
     const u = result.rows[0];
-    res.json({ success: true, user: { id: u.id, companyName: u.company_name, industryType: u.industry_type, email: u.contact_email, phone: u.contact_phone, location: u.location } });
+    res.json({ 
+        success: true, 
+        user: { 
+            id: u.id, 
+            companyName: u.company_name, 
+            industryType: u.industry_type, 
+            email: u.contact_email, 
+            phone: u.contact_phone, 
+            location: u.location,
+            transportRadius: u.transport_radius_km
+        } 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update profile' });
