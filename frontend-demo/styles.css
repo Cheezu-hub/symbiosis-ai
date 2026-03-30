@@ -1,0 +1,359 @@
+/* ============================================
+   SymbioTech Design System - Kinetic Industrialist
+   ============================================ */
+
+/* Base Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, .font-headline {
+    font-family: 'Manrope', sans-serif;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ============================================
+   Glass Panel Effects
+   ============================================ */
+.glass-panel {
+    background: rgba(51, 53, 55, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(55, 57, 59, 0.5);
+}
+
+/* ============================================
+   Custom Scrollbar
+   ============================================ */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #333537;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #58e077;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+/* Page Loading Bar */
+@keyframes loading-bar {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+.animate-loading-bar {
+    animation: loading-bar 0.8s ease-in-out forwards;
+}
+
+/* Fade In Up Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Sidebar Enter Animation */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sidebar-enter {
+    animation: slideInLeft 0.4s ease-out forwards;
+}
+
+/* Table Row Animate */
+@keyframes tableRowFade {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.table-row-animate {
+    opacity: 0;
+    animation: tableRowFade 0.5s ease-out forwards;
+}
+
+/* Bar Chart Animation */
+@keyframes barGrow {
+    from {
+        height: 0%;
+    }
+    to {
+        height: var(--bar-height, 50%);
+    }
+}
+
+.bar-animate {
+    height: 0;
+    animation: barGrow 0.8s ease-out forwards;
+}
+
+/* Slow Spin for Network Globe */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+}
+
+/* Progress Ring Animation */
+@keyframes progressRing {
+    from {
+        stroke-dashoffset: 553;
+    }
+    to {
+        stroke-dashoffset: var(--ring-offset, 138);
+    }
+}
+
+.progress-ring-circle {
+    animation: progressRing 1.5s ease-out forwards;
+    animation-delay: 0.5s;
+    --ring-offset: 138;
+}
+
+/* ============================================
+   Card Hover Effects
+   ============================================ */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(12, 14, 16, 0.4);
+}
+
+/* ============================================
+   Tooltip Styles
+   ============================================ */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: #333537;
+    color: #e2e2e5;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-8px);
+}
+
+/* ============================================
+   Input Range Slider Custom
+   ============================================ */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: #333537;
+    border-radius: 4px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #58e077, #2ebd59);
+    cursor: pointer;
+    border: 2px solid #121416;
+    box-shadow: 0 0 10px rgba(88, 224, 119, 0.3);
+    transition: box-shadow 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 20px rgba(88, 224, 119, 0.5);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #58e077, #2ebd59);
+    cursor: pointer;
+    border: 2px solid #121416;
+    box-shadow: 0 0 10px rgba(88, 224, 119, 0.3);
+}
+
+/* ============================================
+   Checkbox Custom
+   ============================================ */
+input[type="checkbox"] {
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #58e077;
+    border-color: #58e077;
+}
+
+/* ============================================
+   Selection Highlight
+   ============================================ */
+::selection {
+    background: #58e077;
+    color: #002108;
+}
+
+/* ============================================
+   Focus Styles
+   ============================================ */
+*:focus-visible {
+    outline: 2px solid #58e077;
+    outline-offset: 2px;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+@media (max-width: 1024px) {
+    aside#sidebar {
+        width: 72px;
+        overflow: hidden;
+    }
+    
+    aside#sidebar .px-6,
+    aside#sidebar nav span:not(.material-symbols-outlined),
+    aside#sidebar .font-manrope:not(.material-symbols-outlined),
+    aside#sidebar button span:not(.material-symbols-outlined) {
+        display: none;
+    }
+    
+    aside#sidebar nav a {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    aside#sidebar .px-4 {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    main {
+        padding-left: 72px !important;
+        margin-left: 0 !important;
+    }
+    
+    main.pl-64 {
+        padding-left: 72px !important;
+    }
+    
+    main.ml-64 {
+        margin-left: 72px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    aside#sidebar {
+        display: none;
+    }
+    
+    main {
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+    }
+    
+    main.pl-64 {
+        padding-left: 0 !important;
+    }
+    
+    main.ml-64 {
+        margin-left: 0 !important;
+    }
+}
+
+/* ============================================
+   Smooth Transitions Globally
+   ============================================ */
+a, button {
+    transition: all 0.2s ease;
+}
+
+/* ============================================
+   Ambient Glow Effects
+   ============================================ */
+.glow-primary {
+    box-shadow: 0 0 30px rgba(88, 224, 119, 0.15);
+}
+
+.glow-tertiary {
+    box-shadow: 0 0 30px rgba(0, 218, 243, 0.15);
+}
+
+/* ============================================
+   Pulse Dot Animation
+   ============================================ */
+@keyframes pulseDot {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.5);
+    }
+}
+
+.pulse-dot {
+    animation: pulseDot 2s ease-in-out infinite;
+}
