@@ -71,8 +71,8 @@ router.get('/profile', authenticateToken, async (req, res) => {
     const u = result.rows[0];
     res.json({ success: true, user: { id: u.id, companyName: u.company_name, industryType: u.industry_type, email: u.contact_email, phone: u.contact_phone, location: u.location, transportRadius: u.transport_radius_km, website: u.website, sustainabilityScore: u.sustainability_score } });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch profile' });
+    console.error("Profile fetch error:", err);
+    res.status(500).json({ error: 'Failed to fetch profile', details: err.message });
   }
 });
 
