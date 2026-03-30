@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SymbioTech | AI Matching Marketplace</title>
+    <meta name="description" content="SymbioTech AI Matching Marketplace - Discover and secure industrial symbiosis opportunities powered by our proprietary matching algorithm."/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary": "#00363d",
+              "on-surface-variant": "#bccab9",
+              "on-secondary-fixed-variant": "#374953",
+              "surface-variant": "#333537",
+              "on-background": "#e2e2e5",
+              "inverse-surface": "#e2e2e5",
+              "on-tertiary-fixed-variant": "#004f58",
+              "on-primary-fixed": "#002108",
+              "surface": "#121416",
+              "on-surface": "#e2e2e5",
+              "primary": "#58e077",
+              "on-tertiary-fixed": "#001f24",
+              "error": "#ffb4ab",
+              "error-container": "#93000a",
+              "surface-bright": "#37393b",
+              "inverse-on-surface": "#2f3133",
+              "on-primary": "#003913",
+              "tertiary-fixed-dim": "#00daf3",
+              "on-error": "#690005",
+              "on-error-container": "#ffdad6",
+              "surface-container-low": "#1a1c1e",
+              "on-secondary-container": "#a7bbc7",
+              "surface-tint": "#58e077",
+              "on-primary-fixed-variant": "#00531f",
+              "secondary-fixed": "#d1e6f2",
+              "secondary-container": "#394c55",
+              "inverse-primary": "#006e2c",
+              "tertiary-fixed": "#9cf0ff",
+              "background": "#121416",
+              "tertiary": "#00daf3",
+              "tertiary-container": "#00b6cb",
+              "primary-fixed-dim": "#58e077",
+              "surface-container-lowest": "#0c0e10",
+              "outline": "#879485",
+              "primary-container": "#2ebd59",
+              "surface-container": "#1e2022",
+              "on-tertiary-container": "#00424a",
+              "primary-fixed": "#76fd90",
+              "surface-container-highest": "#333537",
+              "surface-dim": "#121416",
+              "surface-container-high": "#282a2c",
+              "secondary-fixed-dim": "#b5cad5",
+              "outline-variant": "#3d4a3d",
+              "on-primary-container": "#004519",
+              "on-secondary": "#20333c",
+              "secondary": "#b5cad5",
+              "on-secondary-fixed": "#0a1e26"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+
+<!-- Page Load Animation Overlay -->
+<div id="page-loader" class="fixed inset-0 bg-surface z-[100] flex items-center justify-center transition-opacity duration-500">
+    <div class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center animate-pulse">
+            <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">hub</span>
+        </div>
+        <div class="text-lg font-extrabold text-on-surface font-headline tracking-tight">SymbioTech</div>
+        <div class="w-48 h-1 bg-surface-container-high rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-primary to-tertiary rounded-full animate-loading-bar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- SideNavBar -->
+<aside id="sidebar" class="h-screen w-64 fixed left-0 top-0 bg-[#1a1c1e] flex flex-col py-8 shadow-[12px_0_40px_rgba(12,14,16,0.4)] z-[60] sidebar-enter">
+    <div class="px-6 mb-10 flex items-center gap-3">
+        <div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">hub</span>
+        </div>
+        <div>
+            <div class="text-lg font-extrabold text-[#e2e2e5]">SymbioTech</div>
+            <div class="font-manrope uppercase text-[11px] tracking-[0.05em] font-semibold opacity-50">Industrial Command</div>
+        </div>
+    </div>
+    <nav class="flex-1 space-y-1">
+        <a id="nav-dashboard" class="flex items-center gap-3 px-4 py-3 text-[#e2e2e5] opacity-60 hover:opacity-100 hover:bg-[#333537] transition-all hover:translate-x-1 duration-300" href="index.html">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="font-manrope uppercase text-[11px] tracking-[0.05em] font-semibold">Dashboard</span>
+        </a>
+        <a id="nav-marketplace" class="flex items-center gap-3 px-4 py-3 text-[#58e077] bg-[#282a2c] rounded-r-lg border-l-4 border-[#58e077] transition-all hover:translate-x-1 duration-300" href="marketplace.html">
+            <span class="material-symbols-outlined">storefront</span>
+            <span class="font-manrope uppercase text-[11px] tracking-[0.05em] font-semibold">Marketplace</span>
+        </a>
+        <a id="nav-network" class="flex items-center gap-3 px-4 py-3 text-[#e2e2e5] opacity-60 hover:opacity-100 hover:bg-[#333537] transition-all hover:translate-x-1 duration-300" href="#">
+            <span class="material-symbols-outlined">hub</span>
+            <span class="font-manrope uppercase text-[11px] tracking-[0.05em] font-semibold">Network Map</span>
+        </a>
+        <a id="nav-logistics" class="flex items-center gap-3 px-4 py-3 text-[#e2e2e5] opacity-60 hover:opacity-100 hover:bg-[#333537] transition-all hover:translate-x-1 duration-300" href="#">
+            <span class="material-symbols-outlined">local_shipping</span>
+            <span class="font-manrope uppercase text-[11px] tracking-[0.05em] font-semibold">Logistics</span>
+        </a>
+    </nav>
+    <div class="px-4 mb-6">
+        <button id="btn-new-match" class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary-fixed py-3 rounded-lg font-bold flex items-center justify-center gap-2 active:scale-95 duration-200 hover:shadow-[0_0_30px_rgba(88,224,119,0.2)] transition-shadow">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            <span class="font-manrope uppercase text-[11px] tracking-wider">New Match</span>
+        </button>
+    </div>
+    <div class="mt-auto border-t border-outline-variant/10 pt-4">
+        <a id="nav-support" class="flex items-center gap-3 px-4 py-3 text-[#e2e2e5] opacity-60 hover:opacity-100 hover:bg-[#333537] transition-all hover:translate-x-1 duration-300" href="#">
+            <span class="material-symbols-outlined">help</span>
+            <span class="font-manrope uppercase text-[11px] tracking-[0.05em] font-semibold">Support</span>
+        </a>
+        <a id="nav-logout" class="flex items-center gap-3 px-4 py-3 text-[#e2e2e5] opacity-60 hover:opacity-100 hover:bg-[#333537] transition-all hover:translate-x-1 duration-300" href="#">
+            <span class="material-symbols-outlined">logout</span>
+            <span class="font-manrope uppercase text-[11px] tracking-[0.05em] font-semibold">Logout</span>
+        </a>
+    </div>
+</aside>
+
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen flex flex-col">
+    <!-- TopAppBar -->
+    <header id="top-bar" class="w-full sticky top-0 z-40 bg-[#121416]/95 backdrop-blur-sm flex justify-between items-center px-8 h-16">
+        <div class="flex items-center gap-8">
+            <div class="relative group">
+                <span class="absolute inset-y-0 left-3 flex items-center text-outline">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
+                </span>
+                <input id="search-input" class="bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-sm w-80 focus:ring-1 focus:ring-primary text-on-surface-variant placeholder:text-outline/50 transition-all focus:w-96" placeholder="Search resources, partners..." type="text"/>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <button id="btn-notifications" class="relative p-2 text-on-surface-variant hover:bg-[#282a2c] rounded-full transition-colors active:scale-95 duration-200">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full animate-pulse"></span>
+            </button>
+            <button id="btn-settings" class="p-2 text-on-surface-variant hover:bg-[#282a2c] rounded-full transition-colors active:scale-95 duration-200">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+            <div class="h-8 w-[1px] bg-outline-variant/20 mx-2"></div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="font-manrope text-sm font-bold tracking-tight text-[#58e077]">Operations Dir.</div>
+                    <div class="text-[10px] uppercase tracking-widest text-on-surface-variant/60">Vertex Foundry</div>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-tertiary flex items-center justify-center text-sm font-bold text-on-primary-fixed border-2 border-surface-container-highest">MV</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 p-8 gap-8 overflow-hidden">
+        <!-- Sidebar Filter -->
+        <aside class="w-72 flex-shrink-0 space-y-8 h-[calc(100vh-120px)] overflow-y-auto pr-4 custom-scrollbar fade-in-up" style="animation-delay: 0.1s;">
+            <div>
+                <span class="font-manrope uppercase text-[11px] tracking-[0.1em] font-semibold text-primary mb-4 block">Filter Resources</span>
+                <div class="space-y-3">
+                    <label class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-transparent hover:border-outline-variant/30 cursor-pointer transition-all group">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">eco</span>
+                            <span class="text-sm font-medium">Waste Material</span>
+                        </div>
+                        <input checked class="rounded border-outline-variant text-primary focus:ring-primary bg-surface-container" type="checkbox"/>
+                    </label>
+                    <label class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-transparent hover:border-outline-variant/30 cursor-pointer transition-all group">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                            <span class="text-sm font-medium">Excess Energy</span>
+                        </div>
+                        <input class="rounded border-outline-variant text-primary focus:ring-primary bg-surface-container" type="checkbox"/>
+                    </label>
+                    <label class="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-transparent hover:border-outline-variant/30 cursor-pointer transition-all group">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+                            <span class="text-sm font-medium">Water Systems</span>
+                        </div>
+                        <input class="rounded border-outline-variant text-primary focus:ring-primary bg-surface-container" type="checkbox"/>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <span class="font-manrope uppercase text-[11px] tracking-[0.1em] font-semibold text-primary mb-4 block">Distance (km)</span>
+                <input id="distance-slider" class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" type="range" min="0" max="100" value="50"/>
+                <div class="flex justify-between mt-2 text-[10px] text-on-surface-variant/60 font-medium">
+                    <span>0 km</span>
+                    <span id="distance-value">50 km</span>
+                    <span>100+ km</span>
+                </div>
+            </div>
+            <div class="p-5 bg-surface-container-low rounded-xl border-l-4 border-tertiary">
+                <h4 class="text-sm font-bold font-manrope mb-2">AI Optimization Active</h4>
+                <p class="text-xs text-on-surface-variant leading-relaxed">Your matching engine is currently prioritizing CO2 reduction and logistics cost-efficiency.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area Scrollable -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar pr-4 pb-20">
+            <!-- Hero/Header -->
+            <div class="mb-10 fade-in-up" style="animation-delay: 0.15s;">
+                <h1 class="text-4xl font-extrabold font-headline tracking-tight mb-2">Marketplace</h1>
+                <p class="text-on-surface-variant max-w-2xl">Discover and secure industrial symbiosis opportunities powered by our proprietary matching algorithm.</p>
+            </div>
+
+            <!-- Matches for You Grid -->
+            <section class="mb-12 fade-in-up" style="animation-delay: 0.2s;">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold font-headline">Matches for You</h2>
+                        <span class="px-2 py-0.5 bg-primary-container/20 text-primary text-[10px] font-bold uppercase tracking-wider rounded animate-pulse">8 New Matches</span>
+                    </div>
+                    <button class="text-xs font-semibold text-tertiary flex items-center gap-1 hover:underline">
+                        View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <!-- Match Card 1 -->
+                    <div class="bg-surface-container-low rounded-xl overflow-hidden flex flex-col h-full group transition-all hover:translate-y-[-4px] card-hover">
+                        <div class="p-6 flex-1">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex gap-4">
+                                    <div class="w-12 h-12 bg-surface-container-highest rounded-lg flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-primary text-3xl">factory</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg font-headline">Apex Steel</h3>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                                            <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Industrial Heat</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <div class="text-2xl font-black text-tertiary font-headline"><span class="counter" data-target="94">0</span>%</div>
+                                    <div class="text-[10px] uppercase font-bold tracking-tighter text-on-surface-variant/50">Compatibility</div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="p-3 bg-surface-container-lowest rounded-lg">
+                                    <div class="text-[10px] uppercase text-outline font-bold mb-1">Available Volume</div>
+                                    <div class="text-sm font-semibold">450 MW/h</div>
+                                </div>
+                                <div class="p-3 bg-surface-container-lowest rounded-lg">
+                                    <div class="text-[10px] uppercase text-outline font-bold mb-1">Distance</div>
+                                    <div class="text-sm font-semibold">12.4 km</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-surface-container-high flex gap-3">
+                            <button class="flex-1 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed py-2.5 rounded-lg text-xs font-bold active:scale-95 transition-all hover:shadow-[0_0_20px_rgba(88,224,119,0.2)]">Accept Match</button>
+                            <button class="px-4 border border-outline-variant/30 text-on-surface hover:bg-surface-bright rounded-lg text-xs font-bold transition-all">Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Match Card 2 -->
+                    <div class="bg-surface-container-low rounded-xl overflow-hidden flex flex-col h-full group transition-all hover:translate-y-[-4px] card-hover">
+                        <div class="p-6 flex-1">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex gap-4">
+                                    <div class="w-12 h-12 bg-surface-container-highest rounded-lg flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-tertiary text-3xl">water_damage</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-lg font-headline">Nova Polymers</h3>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-tertiary"></div>
+                                            <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant/70">Processed Water</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <div class="text-2xl font-black text-tertiary font-headline"><span class="counter" data-target="88">0</span>%</div>
+                                    <div class="text-[10px] uppercase font-bold tracking-tighter text-on-surface-variant/50">Compatibility</div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="p-3 bg-surface-container-lowest rounded-lg">
+                                    <div class="text-[10px] uppercase text-outline font-bold mb-1">Recovery Rate</div>
+                                    <div class="text-sm font-semibold">92,000 L/Day</div>
+                                </div>
+                                <div class="p-3 bg-surface-container-lowest rounded-lg">
+                                    <div class="text-[10px] uppercase text-outline font-bold mb-1">Distance</div>
+                                    <div class="text-sm font-semibold">3.8 km</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-surface-container-high flex gap-3">
+                            <button class="flex-1 bg-gradient-to-r from-primary to-primary-container text-on-primary-fixed py-2.5 rounded-lg text-xs font-bold active:scale-95 transition-all hover:shadow-[0_0_20px_rgba(88,224,119,0.2)]">Accept Match</button>
+                            <button class="px-4 border border-outline-variant/30 text-on-surface hover:bg-surface-bright rounded-lg text-xs font-bold transition-all">Details</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- New Opportunities List -->
+            <section class="fade-in-up" style="animation-delay: 0.3s;">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold font-headline">New Opportunities</h2>
+                    <div class="flex gap-2">
+                        <span class="text-xs font-medium px-3 py-1 bg-surface-container-high rounded-full cursor-pointer hover:bg-surface-bright transition-colors">Recent</span>
+                        <span class="text-xs font-medium px-3 py-1 bg-surface-container-low rounded-full opacity-50 cursor-pointer hover:opacity-100 transition-opacity">Saved</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <!-- Opportunity 1 -->
+                    <div class="bg-surface-container-low hover:bg-surface-container-high p-4 rounded-xl flex items-center justify-between transition-all cursor-pointer group">
+                        <div class="flex items-center gap-6">
+                            <div class="w-10 h-10 rounded-lg bg-[#0c0e10] flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">eco</span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm">Bio-Organic Sludge Feedstock</div>
+                                <div class="text-xs text-on-surface-variant flex items-center gap-2">
+                                    <span>Titan Bio-Gas</span> • <span>24.1 km away</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-8">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/40 mb-1">Potential Savings</div>
+                                <div class="text-sm font-bold text-primary">-$12.4k / mo</div>
+                            </div>
+                            <span class="px-3 py-1 bg-error-container/20 text-error text-[10px] font-black uppercase tracking-widest rounded border border-error/10">High Priority</span>
+                            <span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+                        </div>
+                    </div>
+
+                    <!-- Opportunity 2 -->
+                    <div class="bg-surface-container-low hover:bg-surface-container-high p-4 rounded-xl flex items-center justify-between transition-all cursor-pointer group">
+                        <div class="flex items-center gap-6">
+                            <div class="w-10 h-10 rounded-lg bg-[#0c0e10] flex items-center justify-center">
+                                <span class="material-symbols-outlined text-tertiary">bolt</span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm">Solar Peak Storage Offload</div>
+                                <div class="text-xs text-on-surface-variant flex items-center gap-2">
+                                    <span>Helios Energy Hub</span> • <span>1.2 km away</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-8">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/40 mb-1">Potential Savings</div>
+                                <div class="text-sm font-bold text-primary">-$4.2k / mo</div>
+                            </div>
+                            <span class="px-3 py-1 bg-secondary-container/20 text-secondary text-[10px] font-black uppercase tracking-widest rounded border border-secondary/10">Efficiency</span>
+                            <span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+                        </div>
+                    </div>
+
+                    <!-- Opportunity 3 -->
+                    <div class="bg-surface-container-low hover:bg-surface-container-high p-4 rounded-xl flex items-center justify-between transition-all cursor-pointer group">
+                        <div class="flex items-center gap-6">
+                            <div class="w-10 h-10 rounded-lg bg-[#0c0e10] flex items-center justify-center">
+                                <span class="material-symbols-outlined text-tertiary-fixed-dim">recycling</span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm">Aluminium Scrap (Grade B)</div>
+                                <div class="text-xs text-on-surface-variant flex items-center gap-2">
+                                    <span>Metro Recyclers</span> • <span>32.8 km away</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-8">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/40 mb-1">Potential Savings</div>
+                                <div class="text-sm font-bold text-primary">-$8.9k / mo</div>
+                            </div>
+                            <span class="px-3 py-1 bg-surface-container-highest text-on-surface-variant text-[10px] font-black uppercase tracking-widest rounded">New Post</span>
+                            <span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<!-- Map Floating Control -->
+<div class="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
+    <div class="glass-panel p-2 rounded-2xl flex flex-col gap-2 shadow-[0_12px_40px_rgba(12,14,16,0.4)]">
+        <button id="btn-map" class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface hover:text-primary transition-colors hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined">map</span>
+        </button>
+        <button id="btn-analytics" class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-on-surface hover:text-primary transition-colors hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined">analytics</span>
+        </button>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
