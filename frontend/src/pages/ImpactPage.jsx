@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Leaf, TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
+import { TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { impactAPI } from '../services/api';
 
@@ -15,6 +15,7 @@ const ImpactPage = ({ user }) => {
 
     useEffect(() => {
         fetchAll();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [period]);
 
     const fetchAll = async () => {
