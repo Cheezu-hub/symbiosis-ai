@@ -1,14 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SymbioTech - AI Powered Industrial Symbiosis Platform</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="SymbioTech - AI Powered Industrial Symbiosis Platform for waste-resource matching and circular economy" />
+    <meta name="theme-color" content="#58e077" />
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Optional - if using Material Icons) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
+    <title>SymbioTech | AI Powered Industrial Symbiosis Platform</title>
+    
+    <!-- Preload Critical Assets -->
+    <link rel="preload" href="/src/index.css" as="style" />
   </head>
   <body>
+    <!-- React Root - This is where your entire app will mount -->
     <div id="root"></div>
+    
+    <!-- Loading Screen (Optional - shown before React loads) -->
+    <div id="page-loader" style="
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary, #121416);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    ">
+      <div style="
+        width: 48px;
+        height: 48px;
+        border: 3px solid var(--border, #37393b);
+        border-top-color: var(--primary, #58e077);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      "></div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
+    
+    <!-- Remove loader once React loads -->
+    <script>
+      window.addEventListener('load', () => {
+        const loader = document.getElementById('page-loader');
+        if (loader) {
+          setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 500);
+          }, 900);
+        }
+      });
+    </script>
+    
+    <!-- React Entry Point -->
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

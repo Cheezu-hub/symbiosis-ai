@@ -1,28 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import {
-    Home,
-    Factory,
-    Recycle,
-    MapPin,
-    TrendingUp,
-    Users,
-    Settings,
-    Plus,
-    Search,
-    Bell,
-    Menu,
-    X,
-    Leaf,
-    Truck,
-    Zap,
-    Globe
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import Layout from './components/layout/Layout';
 
 // Import Pages
 import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
+import MarketplacePage from './pages/MarketplacePage';
 import WasteListingsPage from './pages/WasteListingsPage';
 import ResourceRequestsPage from './pages/ResourceRequestsPage';
 import MatchesPage from './pages/MatchesPage';
@@ -32,120 +15,266 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
-// Navigation Component
-const Navbar = ({ isLoggedIn, onLogout }) => {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const location = useLocation();
-    const navLinks = [
-        { path: '/dashboard', label: 'Dashboard', icon: Home },
-        { path: '/waste-listings', label: 'Waste Listings', icon: Recycle },
-        { path: '/resource-requests', label: 'Resource Requests', icon: Factory },
-        { path: '/matches', label: 'AI Matches', icon: Zap },
-        { path: '/network', label: 'Network', icon: Globe },
-        { path: '/impact', label: 'Impact', icon: Leaf },
-    ];
-
-    return (
-        <nav className="navbar">
-            <div className="navbar-brand">
-                <Recycle size={24} />
-                SymbioTech
-            </div>
-
-            {isLoggedIn && (
-                <>
-                    <div className="nav-links">
-                        {navLinks.map((link) => {
-                            const Icon = link.icon;
-                            return (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    className={`nav-link ${location.pathname === link.path ? 'active' : ''}`}
-                                >
-                                    <Icon size={18} style={{ marginRight: '0.5rem' }} />
-                                    {link.label}
-                                </Link>
-                            );
-                        })}
-                    </div>
-
-                    <div className="nav-links">
-                        <button className="btn btn-outline" style={{ marginRight: '0.5rem' }}>
-                            <Bell size={18} />
-                        </button>
-                        <Link to="/profile" className="btn btn-primary">
-                            <Users size={18} />
-                            Profile
-                        </Link>
-                    </div>
-                </>
-            )}
-
-            {!isLoggedIn && (
-                <div className="nav-links">
-                    <Link to="/login" className="btn btn-outline">Login</Link>
-                    <Link to="/register" className="btn btn-primary">Get Started</Link>
-                </div>
-            )}
-
-            <button
-                className="btn btn-outline"
-                style={{ display: 'none' }}
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-        </nav>
-    );
+// ============================================
+// PrivateRoute Component - Protects authenticated routes
+// ============================================
+const PrivateRoute = ({ children, isLoggedIn }) => {
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 };
 
-// Main App Component
-function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [user, setUser] = useState(null);
+// ============================================
+// PublicRoute Component - Redirects if already logged in
+// ============================================
+const PublicRoute = ({ children, isLoggedIn }) => {
+  if (isLoggedIn) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
 
-    useEffect(() => {
-        const savedUser = localStorage.getItem('symbiotech_user');
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
-            setIsLoggedIn(true);
+// ============================================
+// Loading Spinner Component
+// ============================================
+const LoadingSpinner = () => {
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      background: 'var(--bg-primary, #121416)'
+    }}>
+      <div style={{
+        width: '48px',
+        height: '48px',
+        border: '3px solid var(--border, #37393b)',
+        borderTopColor: 'var(--primary, #58e077)',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite'
+      }} />
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
-    }, []);
+      `}</style>
+    </div>
+  );
+};
 
-    const handleLogin = (userData) => {
-        setUser(userData);
+// ============================================
+// Main App Component
+// ============================================
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // ============================================
+  // Check Authentication on Mount
+  // ============================================
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = () => {
+    try {
+      const savedUser = localStorage.getItem('symbiotech_user');
+      const token = localStorage.getItem('symbiotech_token');
+      
+      if (savedUser && token) {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
         setIsLoggedIn(true);
-        localStorage.setItem('symbiotech_user', JSON.stringify(userData));
-    };
+      }
+    } catch (err) {
+      // Clear invalid/corrupted data
+      console.error('Auth check failed:', err);
+      localStorage.removeItem('symbiotech_user');
+      localStorage.removeItem('symbiotech_token');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleLogout = () => {
-        setUser(null);
-        setIsLoggedIn(false);
-        localStorage.removeItem('symbiotech_user');
-    };
+  // ============================================
+  // Handle Login
+  // ============================================
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setIsLoggedIn(true);
+    localStorage.setItem('symbiotech_user', JSON.stringify(userData));
+  };
 
-    return (
-        <Router>
-            <div className="app">
-                <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
-                <main className="main-content">
-                    <Routes>
-                        <Route path="/" element={<HomePage onLogin={handleLogin} />} />
-                        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-                        <Route path="/register" element={<RegisterPage onLogin={handleLogin} />} />
-                        <Route path="/dashboard" element={isLoggedIn ? <DashboardPage user={user} /> : <LoginPage onLogin={handleLogin} />} />
-                        <Route path="/waste-listings" element={isLoggedIn ? <WasteListingsPage user={user} /> : <LoginPage onLogin={handleLogin} />} />
-                        <Route path="/resource-requests" element={isLoggedIn ? <ResourceRequestsPage user={user} /> : <LoginPage onLogin={handleLogin} />} />
-                        <Route path="/matches" element={isLoggedIn ? <MatchesPage user={user} /> : <LoginPage onLogin={handleLogin} />} />
-                        <Route path="/network" element={isLoggedIn ? <NetworkPage user={user} /> : <LoginPage onLogin={handleLogin} />} />
-                        <Route path="/impact" element={isLoggedIn ? <ImpactPage user={user} /> : <LoginPage onLogin={handleLogin} />} />
-                        <Route path="/profile" element={isLoggedIn ? <ProfilePage user={user} onLogout={handleLogout} /> : <LoginPage onLogin={handleLogin} />} />
-                    </Routes>
-                </main>
-            </div>
-        </Router>
-    );
+  // ============================================
+  // Handle Logout - Clear ALL auth data and redirect
+  // ============================================
+  const handleLogout = () => {
+    // Clear ALL authentication data
+    localStorage.removeItem('symbiotech_user');
+    localStorage.removeItem('symbiotech_token');
+    
+    // Reset state
+    setUser(null);
+    setIsLoggedIn(false);
+    
+    // Force navigation to login page
+    window.location.href = '/login';
+  };
+
+  // ============================================
+  // Show Loading State While Checking Auth
+  // ============================================
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  // ============================================
+  // Render Routes
+  // ============================================
+  return (
+    <Router>
+      <Routes>
+        {/* ============================================
+            PUBLIC ROUTES - No Layout Wrapper (Full Screen)
+            ============================================ */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <HomePage onLogin={handleLogin} />
+            </PublicRoute>
+          }
+        />
+        
+        <Route
+          path="/login"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <LoginPage onLogin={handleLogin} />
+            </PublicRoute>
+          }
+        />
+        
+        <Route
+          path="/register"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <RegisterPage onLogin={handleLogin} />
+            </PublicRoute>
+          }
+        />
+
+        {/* ============================================
+            PROTECTED ROUTES - With Layout Wrapper
+            ============================================ */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <DashboardPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/marketplace"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <MarketplacePage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/waste-listings"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <WasteListingsPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/resource-requests"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <ResourceRequestsPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/matches"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <MatchesPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/network"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <NetworkPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/impact"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <ImpactPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <ProfilePage user={user} onLogout={handleLogout} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* ============================================
+            CATCH-ALL ROUTE - Redirect unknown paths
+            ============================================ */}
+        <Route
+          path="*"
+          element={
+            isLoggedIn ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
