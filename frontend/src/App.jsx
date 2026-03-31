@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 
 // Import Pages
 import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
-import MarketplacePage from './pages/MarketplacePage';
 import WasteListingsPage from './pages/WasteListingsPage';
 import ResourceRequestsPage from './pages/ResourceRequestsPage';
 import MatchesPage from './pages/MatchesPage';
@@ -15,9 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
-// ============================================
 // PrivateRoute Component - Protects authenticated routes
-// ============================================
 const PrivateRoute = ({ children, isLoggedIn }) => {
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
@@ -25,9 +22,7 @@ const PrivateRoute = ({ children, isLoggedIn }) => {
   return children;
 };
 
-// ============================================
 // PublicRoute Component - Redirects if already logged in
-// ============================================
 const PublicRoute = ({ children, isLoggedIn }) => {
   if (isLoggedIn) {
     return <Navigate to="/dashboard" replace />;
@@ -35,9 +30,7 @@ const PublicRoute = ({ children, isLoggedIn }) => {
   return children;
 };
 
-// ============================================
 // Loading Spinner Component
-// ============================================
 const LoadingSpinner = () => {
   return (
     <div style={{
@@ -50,7 +43,7 @@ const LoadingSpinner = () => {
       <div style={{
         width: '48px',
         height: '48px',
-        border: '3px solid var(--border, #37393b)',
+        border: '3px solid var(--border, rgba(55, 57, 59, 0.5))',
         borderTopColor: 'var(--primary, #58e077)',
         borderRadius: '50%',
         animation: 'spin 0.8s linear infinite'
@@ -65,17 +58,12 @@ const LoadingSpinner = () => {
   );
 };
 
-// ============================================
 // Main App Component
-// ============================================
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ============================================
-  // Check Authentication on Mount
-  // ============================================
   useEffect(() => {
     checkAuth();
   }, []);
@@ -91,7 +79,6 @@ function App() {
         setIsLoggedIn(true);
       }
     } catch (err) {
-      // Clear invalid/corrupted data
       console.error('Auth check failed:', err);
       localStorage.removeItem('symbiotech_user');
       localStorage.removeItem('symbiotech_token');
@@ -100,47 +87,28 @@ function App() {
     }
   };
 
-  // ============================================
-  // Handle Login
-  // ============================================
   const handleLogin = (userData) => {
     setUser(userData);
     setIsLoggedIn(true);
     localStorage.setItem('symbiotech_user', JSON.stringify(userData));
   };
 
-  // ============================================
-  // Handle Logout - Clear ALL auth data and redirect
-  // ============================================
   const handleLogout = () => {
-    // Clear ALL authentication data
     localStorage.removeItem('symbiotech_user');
     localStorage.removeItem('symbiotech_token');
-    
-    // Reset state
     setUser(null);
     setIsLoggedIn(false);
-    
-    // Force navigation to login page
     window.location.href = '/login';
   };
 
-  // ============================================
-  // Show Loading State While Checking Auth
-  // ============================================
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  // ============================================
-  // Render Routes
-  // ============================================
   return (
     <Router>
       <Routes>
-        {/* ============================================
-            PUBLIC ROUTES - No Layout Wrapper (Full Screen)
-            ============================================ */}
+        {/* Public Routes - No Layout Wrapper (Full Screen) */}
         <Route
           path="/"
           element={
@@ -149,7 +117,6 @@ function App() {
             </PublicRoute>
           }
         />
-        
         <Route
           path="/login"
           element={
@@ -158,7 +125,6 @@ function App() {
             </PublicRoute>
           }
         />
-        
         <Route
           path="/register"
           element={
@@ -168,9 +134,7 @@ function App() {
           }
         />
 
-        {/* ============================================
-            PROTECTED ROUTES - With Layout Wrapper
-            ============================================ */}
+        {/* Protected Routes - With Layout Wrapper */}
         <Route
           path="/dashboard"
           element={
@@ -181,18 +145,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        
-        <Route
-          path="/marketplace"
-          element={
-            <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <MarketplacePage user={user} />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
-        
         <Route
           path="/waste-listings"
           element={
@@ -203,7 +155,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        
         <Route
           path="/resource-requests"
           element={
@@ -214,7 +165,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        
         <Route
           path="/matches"
           element={
@@ -225,7 +175,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        
         <Route
           path="/network"
           element={
@@ -236,7 +185,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        
         <Route
           path="/impact"
           element={
@@ -247,7 +195,6 @@ function App() {
             </PrivateRoute>
           }
         />
-        
         <Route
           path="/profile"
           element={
@@ -259,9 +206,7 @@ function App() {
           }
         />
 
-        {/* ============================================
-            CATCH-ALL ROUTE - Redirect unknown paths
-            ============================================ */}
+        {/* Catch-All Route */}
         <Route
           path="*"
           element={
