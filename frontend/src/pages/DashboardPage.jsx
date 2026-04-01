@@ -136,45 +136,13 @@ const DashboardPage = ({ user }) => {
     {
       icon: Leaf,
       title: 'CO₂ Reduced',
-      value: `${stats.co2Reduced.toFixed(1)}`,
+      value: `${(stats.co2Reduced || 0).toFixed(1)}`,
       unit: 'tons',
       color: 'success'
     }
   ];
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          background: 'var(--bg-primary, #121416)'
-        }}
-      >
-        <div
-          className="spinner"
-          style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid var(--border, #37393b)',
-            borderTopColor: 'var(--primary, #58e077)',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite'
-          }}
-        />
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  return (
+return (
     <div className="page-container fade-in-up">
       {/* Page Header */}
       <div style={{ marginBottom: '2rem' }}>
@@ -262,7 +230,7 @@ const DashboardPage = ({ user }) => {
               color: 'var(--primary, #58e077)'
             }}
           >
-            {stats.wasteDiverted.toLocaleString()}
+            {(stats.wasteDiverted || 0).toLocaleString()}
           </div>
           <div
             style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}
@@ -311,7 +279,7 @@ const DashboardPage = ({ user }) => {
               color: 'var(--success, #10b981)'
             }}
           >
-            {stats.co2Reduced.toLocaleString()}
+            {(stats.co2Reduced || 0).toLocaleString()}
           </div>
           <div
             style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}
@@ -360,7 +328,7 @@ const DashboardPage = ({ user }) => {
               color: 'var(--warning, #f59e0b)'
             }}
           >
-            ₹{(stats.costSavings / 100000).toFixed(1)}L
+            ₹{((stats.costSavings || 0) / 100000).toFixed(1)}L
           </div>
           <div
             style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}
@@ -432,7 +400,7 @@ const DashboardPage = ({ user }) => {
               width: '72px',
               height: '72px',
               borderRadius: '50%',
-              background: `conic-gradient(var(--primary, #58e077) ${sustainabilityScore}%, var(--border, #37393b) ${sustainabilityScore}%)`,
+              background: `conic-gradient(var(--primary, #58e077) ${sustainabilityScore}%, var(--border, rgba(55, 57, 59, 0.5)) ${sustainabilityScore}%)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -534,13 +502,13 @@ const DashboardPage = ({ user }) => {
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #37393b)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border, rgba(55, 57, 59, 0.5))" />
               <XAxis dataKey="month" stroke="var(--text-secondary, #a0a0a5)" />
               <YAxis stroke="var(--text-secondary, #a0a0a5)" />
               <Tooltip
                 contentStyle={{
                   background: 'var(--bg-secondary, #1a1c1e)',
-                  border: '1px solid var(--border, #37393b)',
+                  border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
                   borderRadius: 'var(--radius, 8px)',
                   color: 'var(--text-primary, #e2e2e5)'
                 }}
@@ -567,13 +535,13 @@ const DashboardPage = ({ user }) => {
           </div>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border, #37393b)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border, rgba(55, 57, 59, 0.5))" />
               <XAxis dataKey="month" stroke="var(--text-secondary, #a0a0a5)" />
               <YAxis stroke="var(--text-secondary, #a0a0a5)" />
               <Tooltip
                 contentStyle={{
                   background: 'var(--bg-secondary, #1a1c1e)',
-                  border: '1px solid var(--border, #37393b)',
+                  border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
                   borderRadius: 'var(--radius, 8px)',
                   color: 'var(--text-primary, #e2e2e5)'
                 }}
@@ -635,7 +603,7 @@ const DashboardPage = ({ user }) => {
                 <tr
                   style={{
                     background: 'var(--bg-tertiary, #282a2c)',
-                    borderBottom: '1px solid var(--border, #37393b)'
+                    borderBottom: '1px solid var(--border, rgba(55, 57, 59, 0.5))'
                   }}
                 >
                   <th
@@ -704,7 +672,7 @@ const DashboardPage = ({ user }) => {
                 {recentMatches.map((match) => (
                   <tr
                     key={match.id}
-                    style={{ borderBottom: '1px solid var(--border, #37393b)' }}
+                    style={{ borderBottom: '1px solid var(--border, rgba(55, 57, 59, 0.5))' }}
                   >
                     <td style={{ padding: '1rem', fontWeight: 500 }}>
                       {match.wasteType}

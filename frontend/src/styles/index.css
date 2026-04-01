@@ -220,8 +220,7 @@ a:hover {
    Animation Utility Classes
    ============================================ */
 .fade-in-up {
-  opacity: 0;
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: fadeInUp 0.4s ease-out;
 }
 
 .slide-in-left {
@@ -257,7 +256,6 @@ a:hover {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  animation: fadeInUp 0.6s ease-out;
 }
 
 /* Page Header */

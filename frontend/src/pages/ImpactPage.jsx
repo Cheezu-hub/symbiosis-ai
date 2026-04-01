@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
+import { Leaf, TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { impactAPI } from '../services/api';
 import Card from '../components/ui/Card';
@@ -14,16 +14,9 @@ const ImpactPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-<<<<<<< HEAD
-    useEffect(() => {
-        fetchAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [period]);
-=======
   useEffect(() => {
     fetchAll();
   }, [period]);
->>>>>>> 1bf11dad0b74853dfa01f2922c0ec8a42c109cd9
 
   const fetchAll = async () => {
     setLoading(true);
@@ -57,39 +50,7 @@ const ImpactPage = ({ user }) => {
     color: COLORS[i % COLORS.length]
   }));
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          background: 'var(--bg-primary, #121416)'
-        }}
-      >
-        <div
-          className="spinner"
-          style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid var(--border, #37393b)',
-            borderTopColor: 'var(--primary, #58e077)',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite'
-          }}
-        />
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  return (
+return (
     <div className="page-container fade-in-up">
       {/* Page Header */}
       <div

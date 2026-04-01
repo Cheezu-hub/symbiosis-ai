@@ -173,9 +173,7 @@ const HomePage = ({ onLogin }) => {
       {/* Hero Section */}
       <section
         style={{
-          paddingTop: '120px',
-          paddingBottom: '80px',
-          paddingHorizontal: '2rem',
+          padding: '120px 2rem 80px',
           textAlign: 'center',
           background: 'radial-gradient(ellipse at top, rgba(88, 224, 119, 0.1), transparent 60%)'
         }}

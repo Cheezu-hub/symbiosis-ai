@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 
 // Import Pages
@@ -33,27 +33,8 @@ const PublicRoute = ({ children, isLoggedIn }) => {
 // Loading Spinner Component
 const LoadingSpinner = () => {
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      background: 'var(--bg-primary, #121416)'
-    }}>
-      <div style={{
-        width: '48px',
-        height: '48px',
-        border: '3px solid var(--border, rgba(55, 57, 59, 0.5))',
-        borderTopColor: 'var(--primary, #58e077)',
-        borderRadius: '50%',
-        animation: 'spin 0.8s linear infinite'
-      }} />
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+    <div className="loading">
+      <div className="spinner" />
     </div>
   );
 };
@@ -109,102 +90,30 @@ function App() {
     <Router>
       <Routes>
         {/* Public Routes - No Layout Wrapper (Full Screen) */}
-        <Route
-          path="/"
-          element={
-            <PublicRoute isLoggedIn={isLoggedIn}>
-              <HomePage onLogin={handleLogin} />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <PublicRoute isLoggedIn={isLoggedIn}>
-              <LoginPage onLogin={handleLogin} />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute isLoggedIn={isLoggedIn}>
-              <RegisterPage onLogin={handleLogin} />
-            </PublicRoute>
-          }
-        />
+        <Route element={<PublicRoute isLoggedIn={isLoggedIn}><Outlet /></PublicRoute>}>
+          <Route path="/" element={<HomePage onLogin={handleLogin} />} />
+          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+          <Route path="/register" element={<RegisterPage onLogin={handleLogin} />} />
+        </Route>
 
         {/* Protected Routes - With Layout Wrapper */}
         <Route
-          path="/dashboard"
           element={
             <PrivateRoute isLoggedIn={isLoggedIn}>
               <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <DashboardPage user={user} />
+                <Outlet />
               </Layout>
             </PrivateRoute>
           }
-        />
-        <Route
-          path="/waste-listings"
-          element={
-            <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <WasteListingsPage user={user} />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/resource-requests"
-          element={
-            <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <ResourceRequestsPage user={user} />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/matches"
-          element={
-            <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <MatchesPage user={user} />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/network"
-          element={
-            <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <NetworkPage user={user} />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/impact"
-          element={
-            <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <ImpactPage user={user} />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <ProfilePage user={user} onLogout={handleLogout} />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
+        >
+          <Route path="/dashboard" element={<DashboardPage user={user} />} />
+          <Route path="/waste-listings" element={<WasteListingsPage user={user} />} />
+          <Route path="/resource-requests" element={<ResourceRequestsPage user={user} />} />
+          <Route path="/matches" element={<MatchesPage user={user} />} />
+          <Route path="/network" element={<NetworkPage user={user} />} />
+          <Route path="/impact" element={<ImpactPage user={user} />} />
+          <Route path="/profile" element={<ProfilePage user={user} onLogout={handleLogout} />} />
+        </Route>
 
         {/* Catch-All Route */}
         <Route
