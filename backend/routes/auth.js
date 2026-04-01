@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO industries (company_name, industry_type, location, contact_email, contact_phone, password_hash)
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, company_name, industry_type, contact_email, location`,
-      [companyName, industryType, location, email, phone, hashedPassword]
+      [companyName, industryType, location || null, email, phone || null, hashedPassword]
     );
     
     const user = result.rows[0];

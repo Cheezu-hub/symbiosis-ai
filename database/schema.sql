@@ -1,6 +1,5 @@
 -- SymbioTech PostgreSQL Schema
 -- Run with: psql -U postgres -d kasainuma -f schema.sql
-
 CREATE TABLE IF NOT EXISTS industries (
   id                   SERIAL PRIMARY KEY,
   company_name         TEXT    NOT NULL,

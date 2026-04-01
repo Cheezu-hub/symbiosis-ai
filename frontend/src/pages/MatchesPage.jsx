@@ -57,39 +57,7 @@ const MatchesPage = ({ user }) => {
   const totalCO2 = matches.reduce((acc, m) => acc + (m.co2Reduction || 0), 0);
   const totalSavings = matches.reduce((acc, m) => acc + (m.costSavings || 0), 0);
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          background: 'var(--bg-primary, #121416)'
-        }}
-      >
-        <div
-          className="spinner"
-          style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid var(--border, #37393b)',
-            borderTopColor: 'var(--primary, #58e077)',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite'
-          }}
-        />
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  return (
+return (
     <div className="page-container fade-in-up">
       {/* Page Header */}
       <div

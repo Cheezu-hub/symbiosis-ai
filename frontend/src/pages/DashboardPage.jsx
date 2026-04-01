@@ -136,7 +136,7 @@ const DashboardPage = ({ user }) => {
     {
       icon: Leaf,
       title: 'CO₂ Reduced',
-      value: `${stats.co2Reduced.toFixed(1)}`,
+      value: `${(stats.co2Reduced || 0).toFixed(1)}`,
       unit: 'tons',
       color: 'success'
     }
@@ -262,7 +262,7 @@ const DashboardPage = ({ user }) => {
               color: 'var(--primary, #58e077)'
             }}
           >
-            {stats.wasteDiverted.toLocaleString()}
+            {(stats.wasteDiverted || 0).toLocaleString()}
           </div>
           <div
             style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}
@@ -311,7 +311,7 @@ const DashboardPage = ({ user }) => {
               color: 'var(--success, #10b981)'
             }}
           >
-            {stats.co2Reduced.toLocaleString()}
+            {(stats.co2Reduced || 0).toLocaleString()}
           </div>
           <div
             style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}
@@ -360,7 +360,7 @@ const DashboardPage = ({ user }) => {
               color: 'var(--warning, #f59e0b)'
             }}
           >
-            ₹{(stats.costSavings / 100000).toFixed(1)}L
+            ₹{((stats.costSavings || 0) / 100000).toFixed(1)}L
           </div>
           <div
             style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}
