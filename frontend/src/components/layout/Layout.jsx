@@ -10,8 +10,10 @@ const Layout = ({ children, isLoggedIn, user, onLogout }) => {
     <div style={{ 
       minHeight: '100vh', 
       background: 'var(--bg-primary, #121416)',
+      color: 'var(--text-primary, #e2e2e5)',
       display: 'flex'
     }}>
+      {/* Sidebar - Left Navigation */}
       {isLoggedIn && (
         <Sidebar
           isLoggedIn={isLoggedIn}
@@ -23,11 +25,15 @@ const Layout = ({ children, isLoggedIn, user, onLogout }) => {
         />
       )}
 
+      {/* Main Content Area */}
       <div style={{
         flex: 1,
         marginLeft: isLoggedIn ? (sidebarCollapsed ? '72px' : '260px') : 0,
-        transition: 'margin-left 0.3s ease'
+        transition: 'margin-left 0.3s ease',
+        width: isLoggedIn ? 'calc(100% - 260px)' : '100%',
+        minWidth: 0
       }}>
+        {/* Topbar - Top Navigation */}
         {isLoggedIn && (
           <Topbar
             user={user}
@@ -35,6 +41,7 @@ const Layout = ({ children, isLoggedIn, user, onLogout }) => {
           />
         )}
 
+        {/* Page Content */}
         <main style={{
           paddingTop: isLoggedIn ? '64px' : 0,
           padding: '2rem',
