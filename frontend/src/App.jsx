@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 
 // Import Pages
@@ -14,7 +14,9 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
+// ============================================
 // PrivateRoute Component - Protects authenticated routes
+// ============================================
 const PrivateRoute = ({ children, isLoggedIn }) => {
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
@@ -22,7 +24,9 @@ const PrivateRoute = ({ children, isLoggedIn }) => {
   return children;
 };
 
+// ============================================
 // PublicRoute Component - Redirects if already logged in
+// ============================================
 const PublicRoute = ({ children, isLoggedIn }) => {
   if (isLoggedIn) {
     return <Navigate to="/dashboard" replace />;
@@ -30,7 +34,9 @@ const PublicRoute = ({ children, isLoggedIn }) => {
   return children;
 };
 
+// ============================================
 // Loading Spinner Component
+// ============================================
 const LoadingSpinner = () => {
   return (
     <div className="loading">
@@ -39,12 +45,17 @@ const LoadingSpinner = () => {
   );
 };
 
+// ============================================
 // Main App Component
+// ============================================
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ============================================
+  // Check Authentication on Mount
+  // ============================================
   useEffect(() => {
     checkAuth();
   }, []);
@@ -68,12 +79,18 @@ function App() {
     }
   };
 
+  // ============================================
+  // Handle Login
+  // ============================================
   const handleLogin = (userData) => {
     setUser(userData);
     setIsLoggedIn(true);
     localStorage.setItem('symbiotech_user', JSON.stringify(userData));
   };
 
+  // ============================================
+  // Handle Logout - Clear ALL auth data and redirect
+  // ============================================
   const handleLogout = () => {
     localStorage.removeItem('symbiotech_user');
     localStorage.removeItem('symbiotech_token');
@@ -82,21 +99,52 @@ function App() {
     window.location.href = '/login';
   };
 
+  // ============================================
+  // Show Loading State While Checking Auth
+  // ============================================
   if (loading) {
     return <LoadingSpinner />;
   }
 
+  // ============================================
+  // Render Routes
+  // ============================================
   return (
     <Router>
       <Routes>
-        {/* Public Routes - No Layout Wrapper (Full Screen) */}
-        <Route element={<PublicRoute isLoggedIn={isLoggedIn}><Outlet /></PublicRoute>}>
-          <Route path="/" element={<HomePage onLogin={handleLogin} />} />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="/register" element={<RegisterPage onLogin={handleLogin} />} />
-        </Route>
+        {/* ============================================
+            PUBLIC ROUTES - No Layout Wrapper (Full Screen)
+            ============================================ */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <HomePage onLogin={handleLogin} />
+            </PublicRoute>
+          }
+        />
+        
+        <Route
+          path="/login"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <LoginPage onLogin={handleLogin} />
+            </PublicRoute>
+          }
+        />
+        
+        <Route
+          path="/register"
+          element={
+            <PublicRoute isLoggedIn={isLoggedIn}>
+              <RegisterPage onLogin={handleLogin} />
+            </PublicRoute>
+          }
+        />
 
-        {/* Protected Routes - With Layout Wrapper */}
+        {/* ============================================
+            PROTECTED ROUTES - With Layout Wrapper
+            ============================================ */}
         <Route
           element={
             <PrivateRoute isLoggedIn={isLoggedIn}>
@@ -105,17 +153,77 @@ function App() {
               </Layout>
             </PrivateRoute>
           }
-        >
-          <Route path="/dashboard" element={<DashboardPage user={user} />} />
-          <Route path="/waste-listings" element={<WasteListingsPage user={user} />} />
-          <Route path="/resource-requests" element={<ResourceRequestsPage user={user} />} />
-          <Route path="/matches" element={<MatchesPage user={user} />} />
-          <Route path="/network" element={<NetworkPage user={user} />} />
-          <Route path="/impact" element={<ImpactPage user={user} />} />
-          <Route path="/profile" element={<ProfilePage user={user} onLogout={handleLogout} />} />
-        </Route>
+        />
+        
+        <Route
+          path="/waste-listings"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <WasteListingsPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/resource-requests"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <ResourceRequestsPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/matches"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <MatchesPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/network"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <NetworkPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/impact"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <ImpactPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <ProfilePage user={user} onLogout={handleLogout} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
 
-        {/* Catch-All Route */}
+        {/* ============================================
+            CATCH-ALL ROUTE - Redirect unknown paths
+            ============================================ */}
         <Route
           path="*"
           element={

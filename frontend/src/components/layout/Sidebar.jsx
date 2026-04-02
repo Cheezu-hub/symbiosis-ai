@@ -12,19 +12,23 @@ import {
   X
 } from 'lucide-react';
 
-const Sidebar = ({ isLoggedIn, onLogout, collapsed, setCollapsed, mobileOpen, setMobileOpen }) => {
+const Sidebar = ({ 
+  isLoggedIn, 
+  onLogout, 
+  collapsed, 
+  setCollapsed, 
+  mobileOpen, 
+  setMobileOpen 
+}) => {
   const location = useLocation();
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/marketplace', label: 'Marketplace', icon: Store },
-    { path: '/network', label: 'Network Map', icon: Globe2 },
-    { path: '/logistics', label: 'Logistics', icon: Truck },
-  ];
-
-  const bottomItems = [
-    { path: '/matches', label: 'New Match', icon: PlusCircle, accent: true },
-    { path: '/support', label: 'Support', icon: HelpCircle },
+    { path: '/waste-listings', label: 'Waste Listings', icon: Recycle },
+    { path: '/resource-requests', label: 'Resource Requests', icon: Store },
+    { path: '/matches', label: 'AI Matches', icon: PlusCircle },
+    { path: '/network', label: 'Network', icon: Globe2 },
+    { path: '/impact', label: 'Impact', icon: LayoutDashboard },
   ];
 
   const sidebarContent = (
@@ -32,7 +36,7 @@ const Sidebar = ({ isLoggedIn, onLogout, collapsed, setCollapsed, mobileOpen, se
       {/* Logo Section */}
       <div style={{
         padding: '1.5rem',
-        borderBottom: '1px solid var(--border, #37393b)',
+        borderBottom: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
         display: 'flex',
         alignItems: 'center',
         gap: '0.75rem'
@@ -108,33 +112,23 @@ const Sidebar = ({ isLoggedIn, onLogout, collapsed, setCollapsed, mobileOpen, se
       </nav>
 
       {/* Bottom Actions */}
-      <div style={{ padding: '1rem 0', borderTop: '1px solid var(--border, #37393b)' }}>
-        {bottomItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setMobileOpen(false)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem 1.5rem',
-                color: item.accent ? 'var(--primary, #58e077)' : 'var(--text-secondary, #a0a0a5)',
-                textDecoration: 'none',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Icon size={20} color={item.accent ? 'var(--primary, #58e077)' : undefined} />
-              {!collapsed && (
-                <span style={{ fontWeight: 500, color: item.accent ? 'var(--primary, #58e077)' : undefined }}>
-                  {item.label}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+      <div style={{ padding: '1rem 0', borderTop: '1px solid var(--border, rgba(55, 57, 59, 0.5))' }}>
+        <Link
+          to="/support"
+          onClick={() => setMobileOpen(false)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.75rem 1.5rem',
+            color: 'var(--text-secondary, #a0a0a5)',
+            textDecoration: 'none',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <HelpCircle size={20} />
+          {!collapsed && <span style={{ fontWeight: 500 }}>Support</span>}
+        </Link>
 
         {isLoggedIn && (
           <button
@@ -211,7 +205,7 @@ const Sidebar = ({ isLoggedIn, onLogout, collapsed, setCollapsed, mobileOpen, se
             bottom: 0,
             width: '280px',
             background: 'var(--bg-secondary, #1a1c1e)',
-            borderRight: '1px solid var(--border, #37393b)',
+            borderRight: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
             zIndex: 999,
             display: 'flex',
             flexDirection: 'column'
@@ -229,7 +223,7 @@ const Sidebar = ({ isLoggedIn, onLogout, collapsed, setCollapsed, mobileOpen, se
       style={{
         width: collapsed ? '72px' : '260px',
         background: 'var(--bg-secondary, #1a1c1e)',
-        borderRight: '1px solid var(--border, #37393b)',
+        borderRight: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
         height: '100vh',
         position: 'fixed',
         left: 0,
@@ -237,7 +231,8 @@ const Sidebar = ({ isLoggedIn, onLogout, collapsed, setCollapsed, mobileOpen, se
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 0.3s ease',
-        zIndex: 1000
+        zIndex: 1000,
+        overflow: 'hidden'
       }}
     >
       {sidebarContent}
