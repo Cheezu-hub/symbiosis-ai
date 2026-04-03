@@ -23,7 +23,7 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { wasteAPI, resourceAPI, matchAPI, impactAPI } from '../services/api';
+import { wasteAPI, resourceAPI, matchAPI, impactAPI, aiAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import StatCard from '../components/ui/StatCard';
 import Badge from '../components/ui/Badge';
@@ -42,6 +42,7 @@ const DashboardPage = ({ user }) => {
   const [sustainabilityScore, setSustainabilityScore] = useState(0);
   const [scoreBreakdown, setScoreBreakdown] = useState({});
   const [chartData, setChartData] = useState([]);
+  const [aiOpportunities, setAiOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -53,12 +54,13 @@ const DashboardPage = ({ user }) => {
     setLoading(true);
     setError('');
     try {
-      const [wasteRes, resourceRes, matchRes, impactRes, scoreRes] = await Promise.all([
+      const [wasteRes, resourceRes, matchRes, impactRes, scoreRes, oppsRes] = await Promise.all([
         wasteAPI.getAll(),
         resourceAPI.getAll(),
         matchAPI.getAll(),
         impactAPI.getMetrics(),
-        impactAPI.getSustainabilityScore()
+        impactAPI.getSustainabilityScore(),
+        aiAPI.getOpportunities(3)
       ]);
 
       const wastes = wasteRes.data.data || [];
@@ -66,6 +68,7 @@ const DashboardPage = ({ user }) => {
       const matchData = matchRes.data.data?.matches || [];
       const impact = impactRes.data.data || {};
       const scoreData = scoreRes.data.data || {};
+      const oppsData = oppsRes.data.data?.opportunities || [];
 
       const activeMatches = matchData.filter(
         (m) => m.status === 'pending' || m.status === 'accepted'
@@ -87,6 +90,7 @@ const DashboardPage = ({ user }) => {
       setRecentMatches(matchData.slice(0, 5));
       setSustainabilityScore(scoreData.overallScore || 0);
       setScoreBreakdown(scoreData.breakdown || {});
+      setAiOpportunities(oppsData);
 
       const months = [
         'Month 1',
@@ -724,6 +728,37 @@ const DashboardPage = ({ user }) => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </Card>
+
+      {/* AI Suggested Matches (Opportunities) */}
+      <Card style={{ marginBottom: '2rem', border: '1px solid var(--primary, #58e077)', background: 'rgba(88, 224, 119, 0.05)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <Zap size={24} color="var(--primary, #58e077)" />
+          <h3 style={{ fontSize: '1.2rem', color: 'var(--text-primary, #e2e2e5)', margin: 0 }}>AI Suggested Opportunities</h3>
+        </div>
+        {aiOpportunities.length === 0 ? (
+          <p style={{ color: 'var(--text-secondary, #a0a0a5)' }}>No automated opportunities found at this time.</p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            {aiOpportunities.map(opp => (
+              <div key={opp.wasteListingId + '-' + opp.resourceRequestId} style={{ background: 'var(--bg-secondary, #1a1c1e)', padding: '1.5rem', borderRadius: 'var(--radius, 8px)', border: '1px solid var(--border, rgba(55,57,59,0.5))' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
+                  <Badge variant="success" style={{ fontSize: '0.8rem' }}>{opp.matchScore}% Match</Badge>
+                  <span style={{ color: 'var(--text-secondary, #a0a0a5)', fontSize: '0.8rem', textTransform: 'capitalize' }}>{opp.matchType}</span>
+                </div>
+                <div style={{ marginBottom: '1.5rem', color: 'var(--text-primary, #e2e2e5)' }}>
+                  <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.25rem' }}>{opp.wasteType} &rarr; {opp.resourceType}</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary, #a0a0a5)' }}>
+                    {opp.wasteProvider} to {opp.resourceSeeker}
+                  </div>
+                </div>
+                <Link to="/matches">
+                  <Button variant="primary" size="sm" style={{ width: '100%' }}>Review Details</Button>
+                </Link>
+              </div>
+            ))}
           </div>
         )}
       </Card>

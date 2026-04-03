@@ -54,6 +54,7 @@ app.use('/api/waste',      require('./routes/waste'));
 app.use('/api/resources',  require('./routes/resource'));
 app.use('/api/matches',    require('./routes/matches'));
 app.use('/api/impact',     require('./routes/impact'));
+app.use('/api/ai',         require('./routes/ai'));
 
 app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });

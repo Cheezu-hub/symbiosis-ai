@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, AlertCircle } from 'lucide-react';
-import { wasteAPI } from '../services/api';
+import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, AlertCircle, Zap, Loader } from 'lucide-react';
+import { wasteAPI, aiAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -23,6 +23,20 @@ const WasteListingsPage = ({ user }) => {
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState(emptyForm);
+  const [aiSuggestions, setAiSuggestions] = useState({});
+  const [loadingAi, setLoadingAi] = useState({});
+
+  const fetchAiSuggestions = async (wasteId, materialType) => {
+    setLoadingAi(p => ({ ...p, [wasteId]: true }));
+    try {
+      const res = await aiAPI.getRecommendations(materialType);
+      setAiSuggestions(p => ({ ...p, [wasteId]: res.data.data }));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingAi(p => ({ ...p, [wasteId]: false }));
+    }
+  };
 
   useEffect(() => {
     fetchListings();
@@ -261,7 +275,17 @@ return (
                 <MapPin size={16} />
                 <span>{listing.location || '—'}</span>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  style={{ flex: 1, borderColor: 'var(--primary, #58e077)', color: 'var(--primary, #58e077)' }}
+                  onClick={() => fetchAiSuggestions(listing.id, listing.materialType)}
+                  disabled={loadingAi[listing.id]}
+                >
+                  {loadingAi[listing.id] ? <Loader size={16} className="spin" /> : <Zap size={16} />} 
+                  {aiSuggestions[listing.id] ? 'Refresh AI Ideas' : 'AI Ideas'}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -283,6 +307,34 @@ return (
                   <Trash2 size={16} /> Delete
                 </Button>
               </div>
+
+              {/* AI Ideas Panel */}
+              {aiSuggestions[listing.id] && (
+                <div style={{
+                  padding: '1rem',
+                  background: 'rgba(88, 224, 119, 0.05)',
+                  border: '1px solid rgba(88, 224, 119, 0.3)',
+                  borderRadius: 'var(--radius, 8px)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <Zap size={16} style={{ color: 'var(--primary, #58e077)' }} />
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary, #e2e2e5)', fontSize: '0.9rem' }}>
+                      Recommended Uses
+                    </span>
+                  </div>
+                  {aiSuggestions[listing.id].recommendations?.length > 0 ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {aiSuggestions[listing.id].recommendations.slice(0, 4).map((rec, i) => (
+                        <Badge key={i} style={{ background: 'var(--bg-secondary, #1a1c1e)', border: '1px solid var(--border, #37393b)', color: 'var(--text-secondary, #a0a0a5)' }}>
+                          {rec.industry} ({rec.application})
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}>No standard uses found.</span>
+                  )}
+                </div>
+              )}
             </Card>
           ))}
         </div>

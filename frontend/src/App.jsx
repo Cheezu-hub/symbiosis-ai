@@ -13,6 +13,7 @@ import ImpactPage from './pages/ImpactPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AIInsightsPage from './pages/AIInsightsPage';
 
 // ============================================
 // PrivateRoute Component - Protects authenticated routes
@@ -146,10 +147,11 @@ function App() {
             PROTECTED ROUTES - With Layout Wrapper
             ============================================ */}
         <Route
+          path="/dashboard"
           element={
             <PrivateRoute isLoggedIn={isLoggedIn}>
               <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
-                <Outlet />
+                <DashboardPage user={user} />
               </Layout>
             </PrivateRoute>
           }
@@ -183,6 +185,17 @@ function App() {
             <PrivateRoute isLoggedIn={isLoggedIn}>
               <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
                 <MatchesPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/ai-insights"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <AIInsightsPage user={user} />
               </Layout>
             </PrivateRoute>
           }

@@ -13,7 +13,7 @@ const pool = new Pool({
 });
 
 pool.on('connect', () => console.log('✅ Database connected successfully'));
-pool.on('error',   (err) => { console.error('❌ Database error:', err); process.exit(-1); });
+pool.on('error',   (err) => { console.error('❌ Database pool error:', err.message); });
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -21,7 +21,9 @@ const authenticateToken = (req, res, next) => {
   if (!token) return res.status(401).json({ error: 'Access token required' });
 
   const jwt = require('jsonwebtoken');
-  jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, user) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET not set' });
+  jwt.verify(token, secret, (err, user) => {
     if (err) return res.status(403).json({ error: 'Invalid or expired token' });
     req.user = user;
     next();

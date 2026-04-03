@@ -35,12 +35,15 @@ router.get('/metrics', async (req, res) => {
 router.get('/report', async (req, res) => {
   try {
     const { period = 'monthly' } = req.query;
+    const validPeriods = ['weekly', 'monthly', 'yearly'];
+    if (!validPeriods.includes(period))
+      return res.status(400).json({ error: 'Invalid period. Must be weekly, monthly, or yearly.' });
     const fmt = { 
         weekly: "DATE_TRUNC('week', recorded_date)", 
         monthly: "DATE_TRUNC('month', recorded_date)", 
         yearly: "DATE_TRUNC('year', recorded_date)" 
     };
-    const dateFn = fmt[period] || fmt.monthly;
+    const dateFn = fmt[period];
     
     const result = await pool.query(
       `SELECT ${dateFn} as period, 

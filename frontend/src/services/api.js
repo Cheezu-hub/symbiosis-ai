@@ -85,4 +85,13 @@ export const industryAPI = {
   update: (id, data) => api.put(`/industries/${id}`, data),
 };
 
+// AI APIs
+export const aiAPI = {
+  getRecommendations: (wasteType) => api.get(`/ai/recommend/${encodeURIComponent(wasteType)}`),
+  getSmartMatches: (wasteId) => api.get(`/ai/smart-match/${wasteId}`),
+  getMatchScore: (wasteId, resourceId) => api.get(`/ai/match-score/${wasteId}/${resourceId}`),
+  getOpportunities: (limit = 10) => api.get(`/ai/opportunities?limit=${limit}`),
+  estimateImpact: (data) => api.post('/ai/impact-estimate', data),
+};
+
 export default api;

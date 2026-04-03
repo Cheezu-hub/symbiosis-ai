@@ -6,7 +6,8 @@ const { pool, authenticateToken } = require('../models/database');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-    console.warn("WARNING: JWT_SECRET is not defined in environment variables.");
+    console.error("FATAL: JWT_SECRET is not defined in environment variables. Exiting.");
+    process.exit(1);
 }
 
 router.post('/register', async (req, res) => {
@@ -14,6 +15,10 @@ router.post('/register', async (req, res) => {
     const { companyName, industryType, email, phone, location, password } = req.body;
     if (!companyName || !email || !password)
       return res.status(400).json({ error: 'Company name, email and password are required' });
+    if (password.length < 8)
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (password.length > 72)
+      return res.status(400).json({ error: 'Password must be 72 characters or fewer' });
 
     const existing = await pool.query('SELECT id FROM industries WHERE contact_email = $1', [email]);
     if (existing.rows.length > 0)

@@ -30,7 +30,7 @@ const Layout = ({ children, isLoggedIn, user, onLogout }) => {
         flex: 1,
         marginLeft: isLoggedIn ? (sidebarCollapsed ? '72px' : '260px') : 0,
         transition: 'margin-left 0.3s ease',
-        width: isLoggedIn ? 'calc(100% - 260px)' : '100%',
+        width: isLoggedIn ? `calc(100% - ${sidebarCollapsed ? '72px' : '260px'})` : '100%',
         minWidth: 0
       }}>
         {/* Topbar - Top Navigation */}

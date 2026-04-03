@@ -69,3 +69,14 @@ CREATE TABLE IF NOT EXISTS impact_metrics (
   recorded_date           DATE    DEFAULT CURRENT_DATE,
   UNIQUE (industry_id, recorded_date)
 );
+
+-- Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_waste_industry ON waste_listings(industry_id);
+CREATE INDEX IF NOT EXISTS idx_waste_status ON waste_listings(status);
+CREATE INDEX IF NOT EXISTS idx_waste_material ON waste_listings(material_type);
+CREATE INDEX IF NOT EXISTS idx_resource_industry ON resource_requests(industry_id);
+CREATE INDEX IF NOT EXISTS idx_resource_status ON resource_requests(status);
+CREATE INDEX IF NOT EXISTS idx_matches_waste ON matches(waste_listing_id);
+CREATE INDEX IF NOT EXISTS idx_matches_resource ON matches(resource_request_id);
+CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
+CREATE INDEX IF NOT EXISTS idx_impact_industry ON impact_metrics(industry_id);

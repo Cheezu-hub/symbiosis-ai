@@ -9,7 +9,8 @@ import {
   HelpCircle,
   LogOut,
   Recycle,
-  X
+  X,
+  Zap
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -27,6 +28,7 @@ const Sidebar = ({
     { path: '/waste-listings', label: 'Waste Listings', icon: Recycle },
     { path: '/resource-requests', label: 'Resource Requests', icon: Store },
     { path: '/matches', label: 'AI Matches', icon: PlusCircle },
+    { path: '/ai-insights', label: 'AI Insights', icon: Zap },
     { path: '/network', label: 'Network', icon: Globe2 },
     { path: '/impact', label: 'Impact', icon: LayoutDashboard },
   ];

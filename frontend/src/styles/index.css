@@ -830,3 +830,101 @@ a, button, input, select, textarea {
     display: none !important;
   }
 }
+
+/* ============================================
+   AI Global Styles
+   ============================================ */
+.ai-gradient-text {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ai-pulse {
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+/* ============================================
+   Spin Animation (for loaders)
+   ============================================ */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Layout Utilities (AI Components)
+   ============================================ */
+.relative { position: relative; }
+.absolute { position: absolute; inset: 0; }
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1; }
+.flex-wrap { flex-wrap: wrap; }
+.grid { display: grid; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+
+/* ============================================
+   Spacing Utilities
+   ============================================ */
+.m-0 { margin: 0; }
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mt-1 { margin-top: 0.25rem; }
+.ml-2 { margin-left: 0.5rem; }
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+
+/* ============================================
+   Typography Utilities
+   ============================================ */
+.font-bold { font-weight: 700; }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-center { text-align: center; }
+.text-white { color: #ffffff; }
+
+/* ============================================
+   Color Utilities
+   ============================================ */
+.text-primary { color: var(--primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-accent { color: var(--accent, #00daf3); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-error { color: var(--error); }
+.text-muted { color: var(--text-muted, #64748b); }
+
+/* ============================================
+   Background & Border Utilities
+   ============================================ */
+.bg-tertiary { background: var(--bg-tertiary); }
+.border { border: 1px solid var(--border); }
+.rounded { border-radius: var(--radius, 8px); }
+.rounded-lg { border-radius: var(--radius-lg, 12px); }
+
+/* ============================================
+   Transform Utilities (for SVG score badge)
+   ============================================ */
+.-rotate-90 { transform: rotate(-90deg); }

@@ -4,6 +4,7 @@ import { matchAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
+import SymbiosisScoreBadge from '../components/ai/SymbiosisScoreBadge';
 
 const MatchesPage = ({ user }) => {
   const [matches, setMatches] = useState([]);
@@ -322,53 +323,7 @@ return (
                   >
                     {match.wasteType}
                   </h3>
-                  <div
-                    className="score-circle"
-                    style={{
-                      width: '72px',
-                      height: '72px',
-                      borderRadius: '50%',
-                      background: `conic-gradient(var(--primary, #58e077) ${match.matchScore || 0}%, var(--border, #37393b) ${match.matchScore || 0}%)`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <div
-                      className="score-inner"
-                      style={{
-                        width: '58px',
-                        height: '58px',
-                        borderRadius: '50%',
-                        background: 'var(--bg-secondary, #1a1c1e)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <div
-                        className="score-value"
-                        style={{
-                          fontSize: '1.3rem',
-                          fontWeight: 700,
-                          color: 'var(--text-primary, #e2e2e5)'
-                        }}
-                      >
-                        {match.matchScore || '—'}
-                      </div>
-                      <div
-                        className="score-label"
-                        style={{
-                          fontSize: '0.6rem',
-                          color: 'var(--text-secondary, #a0a0a5)',
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        Match
-                      </div>
-                    </div>
-                  </div>
+                  <SymbiosisScoreBadge score={match.matchScore || 0} size={72} />
                 </div>
                 {match.wasteLocation && (
                   <div
