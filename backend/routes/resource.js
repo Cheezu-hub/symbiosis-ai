@@ -32,6 +32,8 @@ router.get('/', async (req, res) => {
                 location: r.location, 
                 requiredBy: r.required_by, 
                 status: r.status, 
+                pricePerUnit: parseFloat(r.price_per_unit) || 0,
+                category: r.category || '',
                 requesterName: r.requester_name, 
                 industryType: r.industry_type, 
                 createdAt: r.created_at 
@@ -45,11 +47,11 @@ router.get('/', async (req, res) => {
 
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { materialNeeded, description, quantity, unit, industrySector, location, requiredBy } = req.body;
+        const { materialNeeded, description, quantity, unit, industrySector, location, requiredBy, pricePerUnit, category } = req.body;
         if (!materialNeeded || !quantity || !unit) return res.status(400).json({ error: 'materialNeeded, quantity and unit required' });
         const result = await pool.query(
-            `INSERT INTO resource_requests (industry_id, material_needed, description, quantity, unit, industry_sector, location, required_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-            [req.user.id, materialNeeded, description, quantity, unit, industrySector, location, requiredBy]
+            `INSERT INTO resource_requests (industry_id, material_needed, description, quantity, unit, industry_sector, location, required_by, price_per_unit, category) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+            [req.user.id, materialNeeded, description, quantity, unit, industrySector, location, requiredBy, pricePerUnit || 0, category || null]
         );
         const r = result.rows[0];
         res.status(201).json({ 
@@ -64,6 +66,8 @@ router.post('/', authenticateToken, async (req, res) => {
                 location: r.location, 
                 requiredBy: r.required_by, 
                 status: r.status, 
+                pricePerUnit: parseFloat(r.price_per_unit) || 0,
+                category: r.category || '',
                 createdAt: r.created_at 
             } 
         });
@@ -78,13 +82,13 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { materialNeeded, description, quantity, unit, industrySector, location, requiredBy, status } = req.body;
+        const { materialNeeded, description, quantity, unit, industrySector, location, requiredBy, status, pricePerUnit, category } = req.body;
         const check = await pool.query('SELECT industry_id FROM resource_requests WHERE id = $1', [id]);
         if (check.rows.length === 0) return res.status(404).json({ error: 'Not found' });
         if (check.rows[0].industry_id !== req.user.id) return res.status(403).json({ error: 'Unauthorized' });
         const result = await pool.query(
-            `UPDATE resource_requests SET material_needed=COALESCE($1,material_needed), description=COALESCE($2,description), quantity=COALESCE($3,quantity), unit=COALESCE($4,unit), industry_sector=COALESCE($5,industry_sector), location=COALESCE($6,location), required_by=COALESCE($7,required_by), status=COALESCE($8,status), updated_at=CURRENT_TIMESTAMP WHERE id=$9 RETURNING *`,
-            [materialNeeded, description, quantity, unit, industrySector, location, requiredBy, status, id]
+            `UPDATE resource_requests SET material_needed=COALESCE($1,material_needed), description=COALESCE($2,description), quantity=COALESCE($3,quantity), unit=COALESCE($4,unit), industry_sector=COALESCE($5,industry_sector), location=COALESCE($6,location), required_by=COALESCE($7,required_by), status=COALESCE($8,status), price_per_unit=COALESCE($9,price_per_unit), category=COALESCE($10,category), updated_at=CURRENT_TIMESTAMP WHERE id=$11 RETURNING *`,
+            [materialNeeded, description, quantity, unit, industrySector, location, requiredBy, status, pricePerUnit, category, id]
         );
         const r = result.rows[0];
         res.json({ 
@@ -94,7 +98,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 materialNeeded: r.material_needed, 
                 quantity: parseFloat(r.quantity), 
                 unit: r.unit, 
-                status: r.status 
+                status: r.status,
+                pricePerUnit: parseFloat(r.price_per_unit) || 0,
+                category: r.category || ''
             } 
         });
     } catch (err) { 

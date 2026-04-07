@@ -201,7 +201,7 @@ const TransactionsPage = ({ user }) => {
                   {/* Financials */}
                   <div style={{ textAlign: 'right' }}>
                     <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: isSeller ? 'var(--success)' : 'var(--text-primary)' }}>
-                      {isSeller ? '+' : '-'}₹{tx.totalValue.toLocaleString()}
+                      {tx.totalValue === 0 ? 'Free' : `${isSeller ? '+' : '-'}₹${tx.totalValue.toLocaleString()}`}
                     </h3>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                       {tx.quantity} {tx.unit}
