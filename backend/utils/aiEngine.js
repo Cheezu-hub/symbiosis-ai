@@ -266,9 +266,286 @@ function estimateEnvironmentalImpact(materialType, quantityTons) {
   };
 }
 
+// ─── 7. Trade Recommendation Scoring (Distance + Material + Price) ──────────
+
+/**
+ * Configurable weights for the composite trade score.
+ * Sum must equal 1.0 for normalized output.
+ */
+const TRADE_SCORE_WEIGHTS = {
+  distance: 0.35,   // closer companies prioritized
+  material: 0.40,   // supply-demand compatibility (exact/partial category match)
+  price:    0.25,   // competitive pricing
+};
+
+/**
+ * Compute a 0-100 distance score.
+ * Lower physical distance → higher score.
+ * Falls back to 50 when distance is unknown.
+ */
+function computeDistanceScore(wasteLocation, seekerLocation) {
+  const dist = estimateDistance(wasteLocation, seekerLocation);
+  if (dist === null) return { score: 50, distance: null, label: 'Unknown' };
+  if (dist === 0)    return { score: 100, distance: 0, label: 'Same City' };
+  if (dist <= 50)    return { score: 95,  distance: dist, label: 'Very Close (<50 km)' };
+  if (dist <= 100)   return { score: 85,  distance: dist, label: 'Close (50-100 km)' };
+  if (dist <= 200)   return { score: 72,  distance: dist, label: 'Moderate (100-200 km)' };
+  if (dist <= 500)   return { score: 50,  distance: dist, label: 'Distant (200-500 km)' };
+  if (dist <= 1000)  return { score: 30,  distance: dist, label: 'Far (500-1000 km)' };
+  return { score: 10, distance: dist, label: 'Very Far (>1000 km)' };
+}
+
+/**
+ * Compute a 0-100 material matching score combining:
+ *   - Fuzzy material name similarity (NLP-style via Jaccard + alias resolution)
+ *   - Category exact/partial match bonus
+ *   - Industry reusability check
+ */
+function computeMaterialMatchScore(wasteMaterial, wasteCategory, seekerMaterial, seekerCategory, seekerIndustrySector) {
+  // 1. Base material similarity from the existing NLP engine
+  const baseSimilarity = computeMaterialSimilarity(wasteMaterial, seekerMaterial);
+  let score = Math.round(baseSimilarity * 100);
+
+  // 2. Category bonus: exact match +15, partial (one contains the other) +8
+  if (wasteCategory && seekerCategory) {
+    const wCat = normalizeMaterial(wasteCategory);
+    const sCat = normalizeMaterial(seekerCategory);
+    if (wCat === sCat) {
+      score = Math.min(100, score + 15);
+    } else if (wCat.includes(sCat) || sCat.includes(wCat)) {
+      score = Math.min(100, score + 8);
+    } else if (jaccardSimilarity(wCat, sCat) > 0.4) {
+      score = Math.min(100, score + 5);
+    }
+  }
+
+  // 3. Reusability check via knowledge base
+  const resolved = resolveMaterial(wasteMaterial);
+  if (resolved.canonicalName && seekerIndustrySector) {
+    const recs = WASTE_REUSE_MAP[resolved.canonicalName] || [];
+    const sector = normalizeMaterial(seekerIndustrySector);
+    const sectorMatch = recs.find(r => {
+      const ri = normalizeMaterial(r.industry);
+      return ri.includes(sector) || sector.includes(ri) || jaccardSimilarity(ri, sector) > 0.4;
+    });
+    if (sectorMatch) {
+      score = Math.min(100, Math.round(score * 0.7 + sectorMatch.suitability * 0.3));
+    }
+  }
+
+  const matchType = score >= 85 ? 'Exact Match' : score >= 60 ? 'Strong Match' : score >= 40 ? 'Partial Match' : score >= 20 ? 'Weak Match' : 'No Match';
+
+  return { score, matchType, baseSimilarity: Math.round(baseSimilarity * 100) };
+}
+
+/**
+ * Compute a 0-100 price competitiveness score.
+ *
+ * Strategy:
+ *   - A lower waste listing price relative to the resource request's
+ *     willingness-to-pay (price_per_unit) yields a higher score.
+ *   - If both are 0 or missing, return neutral 50.
+ *   - Score = 100 × (1 − clamp((wastePrice − seekerPrice) / seekerPrice, −1, 1) × 0.5 + 0.5)
+ *     simplified: the closer the waste price is to or below the seeker's price, the better.
+ */
+function computePriceScore(wastePrice, seekerPrice) {
+  const wp = parseFloat(wastePrice) || 0;
+  const sp = parseFloat(seekerPrice) || 0;
+
+  // Both zero → neutral
+  if (wp === 0 && sp === 0) return { score: 50, label: 'No Price Data', savings: 0 };
+
+  // Waste is free → excellent deal for the buyer
+  if (wp === 0 && sp > 0) return { score: 100, label: 'Free Resource', savings: sp };
+
+  // Seeker has no price expectation → mild bonus for lower waste price
+  if (sp === 0 && wp > 0) return { score: 40, label: 'Unpriced Demand', savings: 0 };
+
+  // Both have prices → compute ratio
+  const ratio = wp / sp;        // <1 means waste is cheaper than expected
+  let score;
+  if (ratio <= 0.3) score = 100;       // massive discount
+  else if (ratio <= 0.6) score = 90;   // great deal
+  else if (ratio <= 0.9) score = 80;   // good value
+  else if (ratio <= 1.0) score = 70;   // at parity
+  else if (ratio <= 1.2) score = 55;   // slightly above
+  else if (ratio <= 1.5) score = 35;   // expensive
+  else score = 15;                     // significantly overpriced
+
+  const savings = Math.max(0, +(sp - wp).toFixed(2));
+  const label = ratio <= 0.5 ? 'Excellent Value' : ratio <= 1.0 ? 'Good Value' : ratio <= 1.5 ? 'Above Market' : 'Premium Price';
+
+  return { score, label, savings };
+}
+
+/**
+ * Compute the final composite trade recommendation score.
+ * Combines distance, material, and price into a single 0-100 score
+ * with a detailed breakdown for transparency.
+ */
+function computeTradeScore(waste, seeker) {
+  const distResult = computeDistanceScore(waste.location, seeker.location);
+  const matResult  = computeMaterialMatchScore(
+    waste.material_type  || waste.materialType,
+    waste.category,
+    seeker.material_needed || seeker.materialNeeded,
+    seeker.category,
+    seeker.industry_sector || seeker.industrySector
+  );
+  const priceResult = computePriceScore(waste.price_per_unit || waste.pricePerUnit, seeker.price_per_unit || seeker.pricePerUnit);
+
+  const compositeScore = Math.min(100, Math.round(
+    distResult.score  * TRADE_SCORE_WEIGHTS.distance +
+    matResult.score   * TRADE_SCORE_WEIGHTS.material +
+    priceResult.score * TRADE_SCORE_WEIGHTS.price
+  ));
+
+  return {
+    compositeScore,
+    grade: compositeScore >= 85 ? 'A' : compositeScore >= 70 ? 'B' : compositeScore >= 55 ? 'C' : compositeScore >= 40 ? 'D' : 'F',
+    breakdown: {
+      distance: { score: distResult.score, weight: TRADE_SCORE_WEIGHTS.distance, weighted: Math.round(distResult.score * TRADE_SCORE_WEIGHTS.distance), distanceKm: distResult.distance, label: distResult.label },
+      material: { score: matResult.score,  weight: TRADE_SCORE_WEIGHTS.material, weighted: Math.round(matResult.score * TRADE_SCORE_WEIGHTS.material), matchType: matResult.matchType, baseSimilarity: matResult.baseSimilarity },
+      price:    { score: priceResult.score, weight: TRADE_SCORE_WEIGHTS.price,    weighted: Math.round(priceResult.score * TRADE_SCORE_WEIGHTS.price),   label: priceResult.label, savings: priceResult.savings }
+    }
+  };
+}
+
+/**
+ * Generate ranked trade recommendations for a specific company.
+ *
+ * @param {object} company       - The requesting company { id, location, industry_type }
+ * @param {Array}  wasteListings - All available waste listings (with provider info)
+ * @param {Array}  resourceReqs  - All active resource requests (with requester info)
+ * @param {object} opts          - { role: 'buyer'|'seller'|'both', topN: 20 }
+ *
+ * If role = 'buyer':  finds waste listings from OTHER companies that match this company's needs.
+ * If role = 'seller': finds resource requests from OTHER companies that could use this company's waste.
+ * If role = 'both':   merges both directions and returns a unified ranked list.
+ */
+function generateTradeRecommendations(company, wasteListings, resourceReqs, opts = {}) {
+  const { role = 'both', topN = 20 } = opts;
+  const recommendations = [];
+
+  // ─── As Buyer: find waste that matches company's resource requests ─────────
+  if (role === 'buyer' || role === 'both') {
+    const myRequests = resourceReqs.filter(r => (r.industry_id || r.industryId) === company.id);
+    const otherWaste = wasteListings.filter(w => (w.industry_id || w.industryId) !== company.id && w.status === 'available');
+
+    for (const req of myRequests) {
+      for (const waste of otherWaste) {
+        const tradeScore = computeTradeScore(waste, req);
+        if (tradeScore.compositeScore < 25) continue; // skip low-quality matches
+
+        recommendations.push({
+          direction: 'buy',
+          wasteListingId: waste.id,
+          resourceRequestId: req.id,
+          wasteMaterial: waste.material_type || waste.materialType,
+          resourceNeeded: req.material_needed || req.materialNeeded,
+          wasteProvider: waste.provider_name || waste.company_name || `Company #${waste.industry_id}`,
+          wasteProviderType: waste.industry_type || waste.industryType,
+          wasteLocation: waste.location,
+          wasteQuantity: parseFloat(waste.quantity),
+          wasteUnit: waste.unit,
+          wastePrice: parseFloat(waste.price_per_unit) || 0,
+          requestedQuantity: parseFloat(req.quantity),
+          requestedUnit: req.unit,
+          budgetPrice: parseFloat(req.price_per_unit) || 0,
+          compositeScore: tradeScore.compositeScore,
+          grade: tradeScore.grade,
+          breakdown: tradeScore.breakdown,
+          impact: estimateEnvironmentalImpact(waste.material_type || waste.materialType, Math.min(parseFloat(waste.quantity), parseFloat(req.quantity)) || 0),
+          reason: buildRecommendationReason(tradeScore, 'buy')
+        });
+      }
+    }
+  }
+
+  // ─── As Seller: find resource requests that could use company's waste ──────
+  if (role === 'seller' || role === 'both') {
+    const myWaste = wasteListings.filter(w => (w.industry_id || w.industryId) === company.id && w.status === 'available');
+    const otherRequests = resourceReqs.filter(r => (r.industry_id || r.industryId) !== company.id && r.status === 'active');
+
+    for (const waste of myWaste) {
+      for (const req of otherRequests) {
+        // Avoid duplicate if already matched in buyer direction
+        if (recommendations.find(r => r.wasteListingId === waste.id && r.resourceRequestId === req.id)) continue;
+
+        const tradeScore = computeTradeScore(waste, req);
+        if (tradeScore.compositeScore < 25) continue;
+
+        recommendations.push({
+          direction: 'sell',
+          wasteListingId: waste.id,
+          resourceRequestId: req.id,
+          wasteMaterial: waste.material_type || waste.materialType,
+          resourceNeeded: req.material_needed || req.materialNeeded,
+          resourceSeeker: req.requester_name || req.company_name || `Company #${req.industry_id}`,
+          resourceSeekerType: req.industry_type || req.industryType,
+          seekerLocation: req.location,
+          wasteQuantity: parseFloat(waste.quantity),
+          wasteUnit: waste.unit,
+          wastePrice: parseFloat(waste.price_per_unit) || 0,
+          requestedQuantity: parseFloat(req.quantity),
+          requestedUnit: req.unit,
+          budgetPrice: parseFloat(req.price_per_unit) || 0,
+          compositeScore: tradeScore.compositeScore,
+          grade: tradeScore.grade,
+          breakdown: tradeScore.breakdown,
+          impact: estimateEnvironmentalImpact(waste.material_type || waste.materialType, Math.min(parseFloat(waste.quantity), parseFloat(req.quantity)) || 0),
+          reason: buildRecommendationReason(tradeScore, 'sell')
+        });
+      }
+    }
+  }
+
+  // Sort by composite score (highest first), then by material match as tiebreaker
+  recommendations.sort((a, b) => {
+    if (b.compositeScore !== a.compositeScore) return b.compositeScore - a.compositeScore;
+    return b.breakdown.material.score - a.breakdown.material.score;
+  });
+
+  return recommendations.slice(0, topN);
+}
+
+/**
+ * Build a human-readable recommendation reason from the score breakdown.
+ */
+function buildRecommendationReason(tradeScore, direction) {
+  const { breakdown, compositeScore, grade } = tradeScore;
+  const parts = [];
+
+  // Material insight
+  if (breakdown.material.score >= 80)      parts.push('Excellent material compatibility');
+  else if (breakdown.material.score >= 60) parts.push('Good material match');
+  else if (breakdown.material.score >= 40) parts.push('Partial material match');
+  else                                     parts.push('Cross-industry reuse potential');
+
+  // Distance insight
+  if (breakdown.distance.distanceKm !== null) {
+    if (breakdown.distance.distanceKm === 0)       parts.push('same city — minimal logistics');
+    else if (breakdown.distance.distanceKm <= 100) parts.push(`only ${breakdown.distance.distanceKm} km away`);
+    else if (breakdown.distance.distanceKm <= 500) parts.push(`${breakdown.distance.distanceKm} km — moderate transport`);
+    else                                            parts.push(`${breakdown.distance.distanceKm} km — long-distance transport`);
+  }
+
+  // Price insight
+  if (breakdown.price.label === 'Free Resource')        parts.push('free of charge');
+  else if (breakdown.price.label === 'Excellent Value')  parts.push('excellent price');
+  else if (breakdown.price.label === 'Good Value')       parts.push('competitive pricing');
+  else if (breakdown.price.savings > 0)                  parts.push(`saves ₹${breakdown.price.savings}/unit`);
+
+  return parts.join(' · ');
+}
+
 module.exports = {
   getWasteRecommendations, findSmartMatches, computeSymbiosisScore,
   detectOpportunities, estimateEnvironmentalImpact,
   resolveMaterial, computeMaterialSimilarity, getSimilarMaterials,
-  jaccardSimilarity, normalizeMaterial, estimateDistance
+  jaccardSimilarity, normalizeMaterial, estimateDistance,
+  // ─── New Trade Recommendation Exports ─────────────────────────────────
+  computeTradeScore, computeDistanceScore, computeMaterialMatchScore,
+  computePriceScore, generateTradeRecommendations
 };
+

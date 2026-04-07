@@ -27,6 +27,8 @@ const Sidebar = ({
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/waste-listings', label: 'Waste Listings', icon: Recycle },
     { path: '/resource-requests', label: 'Resource Requests', icon: Store },
+    { path: '/trade-requests', label: 'Trade Requests', icon: Truck },
+    { path: '/transactions', label: 'Transactions', icon: Globe2 },
     { path: '/matches', label: 'AI Matches', icon: PlusCircle },
     { path: '/ai-insights', label: 'AI Insights', icon: Zap },
     { path: '/network', label: 'Network', icon: Globe2 },

@@ -21,6 +21,38 @@ class ScoringService {
   estimateEnvironmentalImpact(materialType, quantityTons) {
     return aiEngine.estimateEnvironmentalImpact(materialType, quantityTons);
   }
+
+  // ─── Trade Recommendation Scoring ───────────────────────────────────────
+
+  /**
+   * Compute composite trade score (distance + material + price).
+   */
+  computeTradeScore(waste, seeker) {
+    return aiEngine.computeTradeScore(waste, seeker);
+  }
+
+  /**
+   * Individual scoring dimensions.
+   */
+  computeDistanceScore(loc1, loc2) {
+    return aiEngine.computeDistanceScore(loc1, loc2);
+  }
+
+  computeMaterialMatchScore(wasteMat, wasteCat, seekerMat, seekerCat, seekerSector) {
+    return aiEngine.computeMaterialMatchScore(wasteMat, wasteCat, seekerMat, seekerCat, seekerSector);
+  }
+
+  computePriceScore(wastePrice, seekerPrice) {
+    return aiEngine.computePriceScore(wastePrice, seekerPrice);
+  }
+
+  /**
+   * Generate ranked trade recommendations for a company.
+   */
+  generateTradeRecommendations(company, wasteListings, resourceReqs, opts) {
+    return aiEngine.generateTradeRecommendations(company, wasteListings, resourceReqs, opts);
+  }
 }
 
 module.exports = new ScoringService();
+

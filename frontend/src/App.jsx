@@ -14,6 +14,9 @@ import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AIInsightsPage from './pages/AIInsightsPage';
+import TradeRequestsPage from './pages/TradeRequestsPage';
+import TransactionsPage from './pages/TransactionsPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 // ============================================
 // PrivateRoute Component - Protects authenticated routes
@@ -207,6 +210,39 @@ function App() {
             <PrivateRoute isLoggedIn={isLoggedIn}>
               <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
                 <NetworkPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/trade-requests"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <TradeRequestsPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/transactions"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <TransactionsPage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        
+        <Route
+          path="/notifications"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <NotificationsPage user={user} />
               </Layout>
             </PrivateRoute>
           }
