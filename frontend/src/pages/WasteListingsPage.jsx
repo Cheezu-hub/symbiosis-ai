@@ -11,7 +11,9 @@ const emptyForm = {
   quantity: '',
   unit: 'tons',
   location: '',
-  availableFrom: ''
+  availableFrom: '',
+  pricePerUnit: '',
+  category: ''
 };
 
 const WasteListingsPage = ({ user }) => {
@@ -72,7 +74,9 @@ const WasteListingsPage = ({ user }) => {
       quantity: listing.quantity.toString(),
       unit: listing.unit,
       location: listing.location || '',
-      availableFrom: listing.availableFrom ? listing.availableFrom.split('T')[0] : ''
+      availableFrom: listing.availableFrom ? listing.availableFrom.split('T')[0] : '',
+      pricePerUnit: listing.pricePerUnit?.toString() || '',
+      category: listing.category || ''
     });
     setError('');
     setShowModal(true);
@@ -288,15 +292,15 @@ return (
               >
                 {listing.description || '—'}
               </p>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  marginBottom: '0.5rem',
-                  color: 'var(--text-secondary, #a0a0a5)'
-                }}
-              >
+              {(listing.pricePerUnit > 0) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--primary)' }}>
+                  <span style={{ fontWeight: 600, fontSize: '1.05rem' }}>₹{listing.pricePerUnit.toLocaleString()} / {listing.unit}</span>
+                </div>
+              )}
+              {listing.category && (
+                <div style={{ marginBottom: '0.5rem' }}><Badge variant="outline">{listing.category}</Badge></div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-secondary, #a0a0a5)' }}>
                 <Package size={16} />
                 <span>{listing.quantity} {listing.unit}</span>
               </div>
@@ -640,6 +644,83 @@ return (
                     outline: 'none'
                   }}
                 />
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '1rem',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <div className="form-group">
+                  <label
+                    className="form-label"
+                    style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      fontWeight: 500,
+                      color: 'var(--text-primary, #e2e2e5)'
+                    }}
+                  >
+                    Price Per Unit (Optional)
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>₹</span>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={formData.pricePerUnit}
+                      onChange={(e) => setFormData({ ...formData, pricePerUnit: e.target.value })}
+                      placeholder="e.g. 150"
+                      min="0"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem 0.75rem 2rem',
+                        background: 'var(--bg-tertiary, #282a2c)',
+                        border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
+                        borderRadius: 'var(--radius, 8px)',
+                        color: 'var(--text-primary, #e2e2e5)',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label
+                    className="form-label"
+                    style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      fontWeight: 500,
+                      color: 'var(--text-primary, #e2e2e5)'
+                    }}
+                  >
+                    Category (Optional)
+                  </label>
+                  <select
+                    className="form-select"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 1rem',
+                      background: 'var(--bg-tertiary, #282a2c)',
+                      border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
+                      borderRadius: 'var(--radius, 8px)',
+                      color: 'var(--text-primary, #e2e2e5)',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="">Select Category</option>
+                    <option value="Raw Material">Raw Material</option>
+                    <option value="Byproduct">Byproduct</option>
+                    <option value="Energy">Energy</option>
+                    <option value="Packaging">Packaging</option>
+                    <option value="Water">Water</option>
+                  </select>
+                </div>
               </div>
 
               <div className="form-group" style={{ marginBottom: '2rem' }}>

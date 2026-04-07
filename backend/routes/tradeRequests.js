@@ -134,7 +134,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const senderId = req.user.id;
-    const { wasteListingId, quantityRequested, message } = req.body;
+    const { wasteListingId, quantityRequested, message, pricePerUnit } = req.body;
 
     if (!wasteListingId || !quantityRequested)
       return res.status(400).json({ success: false, error: 'wasteListingId and quantityRequested are required' });
@@ -184,11 +184,15 @@ router.post('/', async (req, res) => {
     } catch (_) {}
 
     const receiverId = listing.industry_id;
+    // Use negotiated price if provided, otherwise fall back to listing price
+    const effectivePrice = (pricePerUnit !== undefined && pricePerUnit !== null && pricePerUnit !== '')
+      ? parseFloat(pricePerUnit)
+      : parseFloat(listing.price_per_unit) || 0;
 
     const result = await pool.query(
-      `INSERT INTO trade_requests (waste_listing_id, sender_id, receiver_id, quantity_requested, message, ai_match_score)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [wasteListingId, senderId, receiverId, quantityRequested, message || null, aiScore]
+      `INSERT INTO trade_requests (waste_listing_id, sender_id, receiver_id, quantity_requested, message, ai_match_score, price_per_unit)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [wasteListingId, senderId, receiverId, quantityRequested, message || null, aiScore, effectivePrice]
     );
     const tradeRequest = result.rows[0];
 
@@ -242,7 +246,7 @@ router.post('/:id/accept', async (req, res) => {
     // Fetch request with full context
     const reqRes = await client.query(
       `SELECT tr.*,
-              wl.material_type, wl.price_per_unit, wl.industry_id as listing_owner_id,
+              wl.material_type, wl.price_per_unit as listing_price_per_unit, wl.industry_id as listing_owner_id,
               sender.company_name as sender_name, sender.contact_email as sender_email,
               receiver.company_name as receiver_name
        FROM trade_requests tr
@@ -289,7 +293,11 @@ router.post('/:id/accept', async (req, res) => {
 
     // 4. Compute environmental impact
     const impact = scoringService.estimateEnvironmentalImpact(tr.material_type, parseFloat(tr.quantity_requested) || 0);
-    const totalValue = parseFloat(tr.price_per_unit) * parseFloat(tr.quantity_requested) || 0;
+    // Use the negotiated price from the trade request; fall back to listing price if zero
+    const negotiatedPrice = parseFloat(tr.price_per_unit) || 0;
+    const listingPrice   = parseFloat(tr.listing_price_per_unit) || 0;
+    const unitPrice  = negotiatedPrice > 0 ? negotiatedPrice : listingPrice;
+    const totalValue = unitPrice * parseFloat(tr.quantity_requested);
 
     // 5. Create transaction record
     const txRes = await client.query(
