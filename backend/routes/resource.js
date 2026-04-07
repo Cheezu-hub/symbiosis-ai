@@ -36,6 +36,7 @@ router.get('/', async (req, res) => {
                 category: r.category || '',
                 requesterName: r.requester_name, 
                 industryType: r.industry_type, 
+                industryId: r.industry_id,
                 createdAt: r.created_at 
             })) 
         });

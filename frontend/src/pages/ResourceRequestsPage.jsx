@@ -444,28 +444,30 @@ return (
                 <MapPin size={16} />
                 <span>{req.location || '—'}</span>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ flex: 1 }}
-                  onClick={() => openEditModal(req)}
-                >
-                  <Edit size={16} /> Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{
-                    flex: 1,
-                    color: 'var(--error, #ef4444)',
-                    borderColor: 'var(--error, #ef4444)'
-                  }}
-                  onClick={() => handleDelete(req.id)}
-                >
-                  <Trash2 size={16} /> Delete
-                </Button>
-              </div>
+              {req.industryId === user?.id && (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    style={{ flex: 1 }}
+                    onClick={() => openEditModal(req)}
+                  >
+                    <Edit size={16} /> Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    style={{
+                      flex: 1,
+                      color: 'var(--error, #ef4444)',
+                      borderColor: 'var(--error, #ef4444)'
+                    }}
+                    onClick={() => handleDelete(req.id)}
+                  >
+                    <Trash2 size={16} /> Delete
+                  </Button>
+                </div>
+              )}
             </Card>
           ))}
         </div>
