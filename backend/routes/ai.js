@@ -3,6 +3,7 @@ const router = express.Router();
 const { pool, authenticateToken } = require('../models/database');
 const recommendationService = require('../services/recommendationService');
 const scoringService = require('../services/scoringService');
+const { runMatching } = require('../utils/matchingRunner');
 
 // ─── GET /api/ai/recommend/:wasteType (public) ─────────────────────────────
 router.get('/recommend/:wasteType', (req, res) => {
@@ -266,6 +267,20 @@ router.post('/match-preview', (req, res) => {
   } catch (err) {
     console.error('AI match-preview error:', err);
     res.status(500).json({ success: false, error: 'Match preview failed' });
+  }
+});
+
+// ─── POST /api/ai/run-matching (auth required) ──────────────────────────────
+// Triggers the AI matching pass: score all waste×resource pairs and persist
+// new matches to the database. Call this after creating waste listings or
+// resource requests. Returns a summary of inserted/updated matches.
+router.post('/run-matching', authenticateToken, async (req, res) => {
+  try {
+    const result = await runMatching();
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('AI run-matching error:', err);
+    res.status(500).json({ success: false, error: 'Matching run failed' });
   }
 });
 

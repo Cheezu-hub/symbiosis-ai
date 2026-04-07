@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool, authenticateToken } = require('../models/database');
+const { runMatching } = require('../utils/matchingRunner');
 
 router.get('/', async (req, res) => {
   try {
@@ -53,6 +54,8 @@ router.post('/', authenticateToken, async (req, res) => {
     );
     const r = result.rows[0];
     res.status(201).json({ success: true, data: { id: r.id, materialType: r.material_type, description: r.description, quantity: parseFloat(r.quantity), unit: r.unit, location: r.location, availableFrom: r.available_from, status: r.status, createdAt: r.created_at } });
+    // Fire-and-forget: generate matches for the new listing
+    runMatching().catch(e => console.error('[waste] post-create matching error:', e));
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create listing' }); }
 });
 

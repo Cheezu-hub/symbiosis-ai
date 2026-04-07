@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, Check, X, Truck, Leaf, TrendingUp, MapPin, RefreshCw } from 'lucide-react';
-import { matchAPI } from '../services/api';
+import { Zap, Check, X, Truck, Leaf, TrendingUp, MapPin, RefreshCw, Play } from 'lucide-react';
+import { matchAPI, aiAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -11,6 +11,8 @@ const MatchesPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
   const [error, setError] = useState('');
+  const [isRunning, setIsRunning] = useState(false);
+  const [matchingMsg, setMatchingMsg] = useState('');
 
   useEffect(() => {
     fetchMatches();
@@ -26,6 +28,22 @@ const MatchesPage = ({ user }) => {
       setError('Failed to load matches. Make sure you are logged in.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRunMatching = async () => {
+    setIsRunning(true);
+    setMatchingMsg('');
+    try {
+      const res = await aiAPI.runMatching();
+      const { inserted, updated } = res.data.data;
+      setMatchingMsg(`✅ Matching complete: ${inserted} new matches found, ${updated} updated.`);
+      // Reload matches so freshly generated ones appear
+      await fetchMatches();
+    } catch (err) {
+      setMatchingMsg('❌ Matching failed. Check backend logs.');
+    } finally {
+      setIsRunning(false);
     }
   };
 
@@ -84,10 +102,33 @@ return (
             Intelligent waste-resource matching powered by semantic AI
           </p>
         </div>
-        <Button variant="outline" onClick={fetchMatches}>
-          <RefreshCw size={18} /> Refresh
-        </Button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <Button variant="primary" onClick={handleRunMatching} disabled={isRunning}>
+            <Play size={18} /> {isRunning ? 'Running...' : 'Run AI Matching'}
+          </Button>
+          <Button variant="outline" onClick={fetchMatches}>
+            <RefreshCw size={18} /> Refresh
+          </Button>
+        </div>
       </div>
+
+      {/* Matching feedback message */}
+      {matchingMsg && (
+        <div
+          style={{
+            background: matchingMsg.startsWith('✅') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+            border: `1px solid ${matchingMsg.startsWith('✅') ? 'var(--success, #10b981)' : 'var(--error, #ef4444)'}`,
+            borderRadius: 'var(--radius, 8px)',
+            padding: '0.85rem 1.25rem',
+            marginBottom: '1.5rem',
+            color: matchingMsg.startsWith('✅') ? 'var(--success, #10b981)' : 'var(--error, #ef4444)',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+          }}
+        >
+          {matchingMsg}
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (

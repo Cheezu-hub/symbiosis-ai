@@ -96,6 +96,8 @@ export const aiAPI = {
   getTradeRecommendations: (role = 'both', limit = 20) => api.get(`/ai/trade-recommendations?role=${role}&limit=${limit}`),
   getTradeScore: (wasteId, resourceId) => api.get(`/ai/trade-score/${wasteId}/${resourceId}`),
   getMatchPreview: (data) => api.post('/ai/match-preview', data),
+  // ─── Run the full AI matching pass and persist results to DB ────────────
+  runMatching: () => api.post('/ai/run-matching'),
 };
 
 // Trade Requests APIs

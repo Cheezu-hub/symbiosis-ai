@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool, authenticateToken } = require('../models/database');
+const { runMatching } = require('../utils/matchingRunner');
 
 router.get('/', async (req, res) => {
     try {
@@ -66,6 +67,8 @@ router.post('/', authenticateToken, async (req, res) => {
                 createdAt: r.created_at 
             } 
         });
+        // Fire-and-forget: generate matches for the new request
+        runMatching().catch(e => console.error('[resource] post-create matching error:', e));
     } catch (err) { 
         console.error(err); 
         res.status(500).json({ error: 'Failed to create request' }); 
