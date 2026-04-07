@@ -70,13 +70,72 @@ CREATE TABLE IF NOT EXISTS impact_metrics (
   UNIQUE (industry_id, recorded_date)
 );
 
+-- ─── Trade-Matching Columns (additive, safe for existing data) ───────────────
+-- Price per unit for economic scoring in AI trade recommendations
+ALTER TABLE waste_listings    ADD COLUMN IF NOT EXISTS price_per_unit NUMERIC DEFAULT 0;
+ALTER TABLE waste_listings    ADD COLUMN IF NOT EXISTS category       TEXT;
+ALTER TABLE resource_requests ADD COLUMN IF NOT EXISTS price_per_unit NUMERIC DEFAULT 0;
+ALTER TABLE resource_requests ADD COLUMN IF NOT EXISTS category       TEXT;
+
+-- Trade requests (inter-company trade flow: pending → accepted/rejected)
+CREATE TABLE IF NOT EXISTS trade_requests (
+  id                SERIAL PRIMARY KEY,
+  waste_listing_id  INTEGER NOT NULL REFERENCES waste_listings(id) ON DELETE CASCADE,
+  sender_id         INTEGER NOT NULL REFERENCES industries(id)     ON DELETE CASCADE,
+  receiver_id       INTEGER NOT NULL REFERENCES industries(id)     ON DELETE CASCADE,
+  quantity_requested NUMERIC NOT NULL,
+  message            TEXT,
+  status             TEXT    DEFAULT 'pending',
+  ai_match_score     NUMERIC,
+  responded_at       TIMESTAMP,
+  created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Transactions (recorded after a trade request is accepted)
+CREATE TABLE IF NOT EXISTS transactions (
+  id                  SERIAL PRIMARY KEY,
+  trade_request_id    INTEGER NOT NULL REFERENCES trade_requests(id) ON DELETE CASCADE,
+  waste_listing_id    INTEGER NOT NULL REFERENCES waste_listings(id) ON DELETE CASCADE,
+  seller_id           INTEGER NOT NULL REFERENCES industries(id)     ON DELETE CASCADE,
+  buyer_id            INTEGER NOT NULL REFERENCES industries(id)     ON DELETE CASCADE,
+  quantity            NUMERIC NOT NULL,
+  total_value         NUMERIC DEFAULT 0,
+  co2_reduction_tons  NUMERIC DEFAULT 0,
+  water_saved_liters  NUMERIC DEFAULT 0,
+  energy_saved_mwh    NUMERIC DEFAULT 0,
+  waste_diverted_tons NUMERIC DEFAULT 0,
+  completed_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Notifications (in-app notification store)
+CREATE TABLE IF NOT EXISTS notifications (
+  id           SERIAL PRIMARY KEY,
+  industry_id  INTEGER NOT NULL REFERENCES industries(id) ON DELETE CASCADE,
+  type         TEXT    NOT NULL,
+  title        TEXT    NOT NULL,
+  message      TEXT,
+  reference_id INTEGER,
+  is_read      BOOLEAN DEFAULT FALSE,
+  created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_waste_industry ON waste_listings(industry_id);
 CREATE INDEX IF NOT EXISTS idx_waste_status ON waste_listings(status);
 CREATE INDEX IF NOT EXISTS idx_waste_material ON waste_listings(material_type);
+CREATE INDEX IF NOT EXISTS idx_waste_category ON waste_listings(category);
 CREATE INDEX IF NOT EXISTS idx_resource_industry ON resource_requests(industry_id);
 CREATE INDEX IF NOT EXISTS idx_resource_status ON resource_requests(status);
+CREATE INDEX IF NOT EXISTS idx_resource_category ON resource_requests(category);
 CREATE INDEX IF NOT EXISTS idx_matches_waste ON matches(waste_listing_id);
 CREATE INDEX IF NOT EXISTS idx_matches_resource ON matches(resource_request_id);
 CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
 CREATE INDEX IF NOT EXISTS idx_impact_industry ON impact_metrics(industry_id);
+CREATE INDEX IF NOT EXISTS idx_trade_req_sender ON trade_requests(sender_id);
+CREATE INDEX IF NOT EXISTS idx_trade_req_receiver ON trade_requests(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_trade_req_status ON trade_requests(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_seller ON transactions(seller_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_buyer ON transactions(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_industry ON notifications(industry_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read);

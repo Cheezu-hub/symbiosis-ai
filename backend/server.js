@@ -56,6 +56,11 @@ app.use('/api/matches',    require('./routes/matches'));
 app.use('/api/impact',     require('./routes/impact'));
 app.use('/api/ai',         require('./routes/ai'));
 
+// ─── Trade & Notifications Routes ───────────────────────────────────────────
+app.use('/api/trade-requests', require('./routes/tradeRequests'));
+app.use('/api/transactions',   require('./routes/transactions'));
+app.use('/api/notifications',  require('./routes/notifications'));
+
 app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });
 });

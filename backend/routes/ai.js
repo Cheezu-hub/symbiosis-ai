@@ -120,4 +120,154 @@ router.post('/impact-estimate', (req, res) => {
   }
 });
 
+// ─── GET /api/ai/trade-recommendations (auth required) ──────────────────────
+// Returns ranked trade recommendations for the authenticated company.
+// Query params:
+//   role  = 'buyer' | 'seller' | 'both' (default: 'both')
+//   limit = number of results (default: 20, max: 50)
+router.get('/trade-recommendations', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const role   = ['buyer', 'seller', 'both'].includes(req.query.role) ? req.query.role : 'both';
+    const topN   = Math.min(parseInt(req.query.limit) || 20, 50);
+
+    // Fetch the authenticated company's details
+    const companyRes = await pool.query(
+      'SELECT id, company_name, industry_type, location FROM industries WHERE id = $1', [userId]
+    );
+    if (!companyRes.rows.length) return res.status(404).json({ success: false, error: 'Company not found' });
+    const company = companyRes.rows[0];
+
+    // Fetch all available waste listings with provider info + pricing
+    const wasteRes = await pool.query(
+      `SELECT wl.*, i.company_name as provider_name, i.industry_type, i.location as company_location
+       FROM waste_listings wl
+       JOIN industries i ON wl.industry_id = i.id
+       WHERE wl.status = 'available'`
+    );
+
+    // Fetch all active resource requests with requester info + pricing
+    const resourceRes = await pool.query(
+      `SELECT rr.*, i.company_name as requester_name, i.industry_type, i.location as company_location
+       FROM resource_requests rr
+       JOIN industries i ON rr.industry_id = i.id
+       WHERE rr.status = 'active'`
+    );
+
+    const recommendations = scoringService.generateTradeRecommendations(
+      company, wasteRes.rows, resourceRes.rows, { role, topN }
+    );
+
+    // Compute summary stats
+    const avgScore = recommendations.length > 0
+      ? Math.round(recommendations.reduce((s, r) => s + r.compositeScore, 0) / recommendations.length)
+      : 0;
+    const gradeDistribution = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+    recommendations.forEach(r => gradeDistribution[r.grade]++);
+    const buyCount  = recommendations.filter(r => r.direction === 'buy').length;
+    const sellCount = recommendations.filter(r => r.direction === 'sell').length;
+
+    res.json({
+      success: true,
+      data: {
+        company: { id: company.id, name: company.company_name, location: company.location },
+        role,
+        recommendations,
+        summary: {
+          totalRecommendations: recommendations.length,
+          averageScore: avgScore,
+          buyOpportunities: buyCount,
+          sellOpportunities: sellCount,
+          gradeDistribution,
+          totalWasteListings: wasteRes.rows.length,
+          totalResourceRequests: resourceRes.rows.length
+        }
+      }
+    });
+  } catch (err) {
+    console.error('AI trade-recommendations error:', err);
+    res.status(500).json({ success: false, error: 'Trade recommendation generation failed' });
+  }
+});
+
+// ─── GET /api/ai/trade-score/:wasteId/:resourceId (auth required) ───────────
+// Score a specific waste-listing ↔ resource-request pair using the
+// trade recommendation algorithm (distance + material + price).
+router.get('/trade-score/:wasteId/:resourceId', authenticateToken, async (req, res) => {
+  try {
+    const [wasteRes, resourceRes] = await Promise.all([
+      pool.query(
+        `SELECT wl.*, i.company_name as provider_name, i.industry_type as provider_type, i.location as provider_location
+         FROM waste_listings wl JOIN industries i ON wl.industry_id = i.id WHERE wl.id = $1`,
+        [req.params.wasteId]
+      ),
+      pool.query(
+        `SELECT rr.*, i.company_name as requester_name, i.industry_type as requester_type, i.location as requester_location
+         FROM resource_requests rr JOIN industries i ON rr.industry_id = i.id WHERE rr.id = $1`,
+        [req.params.resourceId]
+      )
+    ]);
+
+    if (!wasteRes.rows.length) return res.status(404).json({ success: false, error: 'Waste listing not found' });
+    if (!resourceRes.rows.length) return res.status(404).json({ success: false, error: 'Resource request not found' });
+
+    const w = wasteRes.rows[0], r = resourceRes.rows[0];
+
+    const tradeScore = scoringService.computeTradeScore(w, r);
+    const impact = scoringService.estimateEnvironmentalImpact(w.material_type, Math.min(parseFloat(w.quantity), parseFloat(r.quantity)) || 0);
+
+    res.json({
+      success: true,
+      data: {
+        wasteProvider: { name: w.provider_name, type: w.provider_type, location: w.location },
+        resourceSeeker: { name: r.requester_name, type: r.requester_type, location: r.location },
+        wasteMaterial: w.material_type,
+        resourceNeeded: r.material_needed,
+        wastePrice: parseFloat(w.price_per_unit) || 0,
+        seekerBudget: parseFloat(r.price_per_unit) || 0,
+        compositeScore: tradeScore.compositeScore,
+        grade: tradeScore.grade,
+        breakdown: tradeScore.breakdown,
+        impact
+      }
+    });
+  } catch (err) {
+    console.error('AI trade-score error:', err);
+    res.status(500).json({ success: false, error: 'Trade score computation failed' });
+  }
+});
+
+// ─── POST /api/ai/match-preview (public) ────────────────────────────────────
+// Quick scoring without touching the database. Useful for frontend previews.
+// Body: { wasteMaterial, wasteLocation, wasteCategory, wastePrice,
+//         seekerMaterial, seekerLocation, seekerCategory, seekerPrice, seekerIndustry }
+router.post('/match-preview', (req, res) => {
+  try {
+    const { wasteMaterial, wasteLocation, wasteCategory, wastePrice,
+            seekerMaterial, seekerLocation, seekerCategory, seekerPrice, seekerIndustry } = req.body;
+
+    if (!wasteMaterial || !seekerMaterial) {
+      return res.status(400).json({ success: false, error: 'wasteMaterial and seekerMaterial are required' });
+    }
+
+    const tradeScore = scoringService.computeTradeScore(
+      { material_type: wasteMaterial, location: wasteLocation, category: wasteCategory, price_per_unit: wastePrice || 0 },
+      { material_needed: seekerMaterial, location: seekerLocation, category: seekerCategory, price_per_unit: seekerPrice || 0, industry_sector: seekerIndustry }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        compositeScore: tradeScore.compositeScore,
+        grade: tradeScore.grade,
+        breakdown: tradeScore.breakdown
+      }
+    });
+  } catch (err) {
+    console.error('AI match-preview error:', err);
+    res.status(500).json({ success: false, error: 'Match preview failed' });
+  }
+});
+
 module.exports = router;
+

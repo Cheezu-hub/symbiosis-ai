@@ -92,6 +92,34 @@ export const aiAPI = {
   getMatchScore: (wasteId, resourceId) => api.get(`/ai/match-score/${wasteId}/${resourceId}`),
   getOpportunities: (limit = 10) => api.get(`/ai/opportunities?limit=${limit}`),
   estimateImpact: (data) => api.post('/ai/impact-estimate', data),
+  // ─── Trade Recommendation APIs ──────────────────────────────────────────
+  getTradeRecommendations: (role = 'both', limit = 20) => api.get(`/ai/trade-recommendations?role=${role}&limit=${limit}`),
+  getTradeScore: (wasteId, resourceId) => api.get(`/ai/trade-score/${wasteId}/${resourceId}`),
+  getMatchPreview: (data) => api.post('/ai/match-preview', data),
+};
+
+// Trade Requests APIs
+export const tradeAPI = {
+  getAll: (direction = 'all') => api.get(`/trade-requests?direction=${direction}`),
+  getById: (id) => api.get(`/trade-requests/${id}`),
+  create: (data) => api.post('/trade-requests', data),
+  accept: (id) => api.post(`/trade-requests/${id}/accept`),
+  reject: (id, reason) => api.post(`/trade-requests/${id}/reject`, { reason }),
+};
+
+// Transactions APIs
+export const transactionAPI = {
+  getAll: (role = 'all', limit = 50) => api.get(`/transactions?role=${role}&limit=${limit}`),
+  getDashboard: () => api.get('/transactions/dashboard'),
+  getById: (id) => api.get(`/transactions/${id}`),
+};
+
+// Notifications APIs
+export const notificationAPI = {
+  getAll: (limit = 50) => api.get(`/notifications?limit=${limit}`),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllAsRead: () => api.put('/notifications/read-all'),
 };
 
 export default api;

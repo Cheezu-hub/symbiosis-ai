@@ -78,7 +78,7 @@ const Topbar = ({ user, onMenuClick }) => {
         {/* Notifications Bell */}
         <div style={{ position: 'relative' }}>
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={() => window.location.href = '/notifications'}
             style={{
               position: 'relative',
               background: 'transparent',
@@ -105,31 +105,6 @@ const Topbar = ({ user, onMenuClick }) => {
               }}
             />
           </button>
-
-          {showNotifications && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                width: '320px',
-                background: 'var(--bg-secondary, #1a1c1e)',
-                border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
-                borderRadius: 'var(--radius-lg, 12px)',
-                boxShadow: 'var(--shadow-lg, 0 12px 40px rgba(12, 14, 16, 0.4))',
-                padding: '1rem',
-                marginTop: '0.5rem',
-                zIndex: 1000
-              }}
-            >
-              <h4 style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text-secondary, #a0a0a5)' }}>
-                Notifications
-              </h4>
-              <p style={{ color: 'var(--text-muted, #64748b)', fontSize: '0.85rem' }}>
-                No new notifications
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Settings Icon */}

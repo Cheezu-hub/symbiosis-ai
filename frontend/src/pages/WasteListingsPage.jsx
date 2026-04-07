@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, AlertCircle, Zap, Loader } from 'lucide-react';
-import { wasteAPI, aiAPI } from '../services/api';
+import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, AlertCircle, Zap, Loader, Briefcase } from 'lucide-react';
+import { wasteAPI, aiAPI, tradeAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
@@ -25,6 +25,9 @@ const WasteListingsPage = ({ user }) => {
   const [formData, setFormData] = useState(emptyForm);
   const [aiSuggestions, setAiSuggestions] = useState({});
   const [loadingAi, setLoadingAi] = useState({});
+  const [tradeModal, setTradeModal] = useState({ show: false, listing: null });
+  const [tradeForm, setTradeForm] = useState({ quantity: '', price: '', message: '' });
+  const [sendingTrade, setSendingTrade] = useState(false);
 
   const fetchAiSuggestions = async (wasteId, materialType) => {
     setLoadingAi(p => ({ ...p, [wasteId]: true }));
@@ -101,6 +104,40 @@ const WasteListingsPage = ({ user }) => {
       setListings(prev => prev.filter(l => l.id !== id));
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to delete listing.');
+    }
+  };
+
+  const openTradeModal = (listing) => {
+    setTradeModal({ show: true, listing });
+    setTradeForm({ quantity: listing.quantity || '', price: '', message: '' });
+    setError('');
+  };
+
+  const submitTradeRequest = async (e) => {
+    e.preventDefault();
+    setSendingTrade(true);
+    setError('');
+    
+    // We need to fetch the target industry_id, but the backend doesn't provide it in the GET /waste API.
+    // However, the new tradeRequests.js backend API requires: receiverId, wasteListingId, quantityRequested, pricePerUnit.
+    // Instead of receiverId, we rely on the backend automatically finding receiverId from wasteListingId if needed, 
+    // OR we can make trade.create take wasteListingId and deduce receiverId.
+    // Let's rely on api call:
+    try {
+      // Import the api inside component or at top. We already have `tradeAPI` not imported. Let's make sure it's imported.
+      // Wait, we need to import tradeAPI at the top. We will do that in another chunk.
+      await tradeAPI.create({
+        wasteListingId: tradeModal.listing.id,
+        quantityRequested: parseFloat(tradeForm.quantity),
+        pricePerUnit: parseFloat(tradeForm.price) || 0,
+        message: tradeForm.message
+      });
+      setTradeModal({ show: false, listing: null });
+      alert('Trade request sent successfully!');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to send trade request.');
+    } finally {
+      setSendingTrade(false);
     }
   };
 
@@ -286,26 +323,40 @@ return (
                   {loadingAi[listing.id] ? <Loader size={16} className="spin" /> : <Zap size={16} />} 
                   {aiSuggestions[listing.id] ? 'Refresh AI Ideas' : 'AI Ideas'}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{ flex: 1 }}
-                  onClick={() => openEditModal(listing)}
-                >
-                  <Edit size={16} /> Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  style={{
-                    flex: 1,
-                    color: 'var(--error, #ef4444)',
-                    borderColor: 'var(--error, #ef4444)'
-                  }}
-                  onClick={() => handleDelete(listing.id)}
-                >
-                  <Trash2 size={16} /> Delete
-                </Button>
+                
+                {listing.providerName !== user.companyName ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    style={{ flex: 1 }}
+                    onClick={() => openTradeModal(listing)}
+                  >
+                    <Briefcase size={16} /> Request Trade
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      style={{ flex: 1 }}
+                      onClick={() => openEditModal(listing)}
+                    >
+                      <Edit size={16} /> Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      style={{
+                        flex: 1,
+                        color: 'var(--error, #ef4444)',
+                        borderColor: 'var(--error, #ef4444)'
+                      }}
+                      onClick={() => handleDelete(listing.id)}
+                    >
+                      <Trash2 size={16} /> Delete
+                    </Button>
+                  </>
+                )}
               </div>
 
               {/* AI Ideas Panel */}
@@ -636,6 +687,96 @@ return (
                   disabled={saving}
                 >
                   {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Listing'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Trade Request Modal */}
+      {tradeModal.show && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000
+          }}
+          onClick={() => setTradeModal({ show: false, listing: null })}
+        >
+          <div
+            className="modal-content"
+            style={{
+              background: 'var(--bg-secondary, #1a1c1e)', border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
+              borderRadius: 'var(--radius-lg, 12px)', padding: '2rem', width: '100%', maxWidth: '500px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>
+                Request {tradeModal.listing.materialType}
+              </h3>
+              <button
+                onClick={() => setTradeModal({ show: false, listing: null })}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.5rem' }}
+              >
+                ×
+              </button>
+            </div>
+
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              Send a trade request to <strong>{tradeModal.listing.providerName}</strong>. 
+            </p>
+
+            {error && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)', borderRadius: '8px', padding: '0.75rem', marginBottom: '1rem', color: 'var(--error)' }}>
+                <AlertCircle size={16} /> <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={submitTradeRequest}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Quantity Needed</label>
+                  <input
+                    type="number"
+                    value={tradeForm.quantity}
+                    onChange={(e) => setTradeForm({ ...tradeForm, quantity: e.target.value })}
+                    style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white' }}
+                    required
+                    max={tradeModal.listing.quantity}
+                  />
+                  <small style={{ color: 'var(--text-muted)' }}>Max: {tradeModal.listing.quantity} {tradeModal.listing.unit}</small>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Price Offer (per unit)</label>
+                  <input
+                    type="number"
+                    value={tradeForm.price}
+                    onChange={(e) => setTradeForm({ ...tradeForm, price: e.target.value })}
+                    style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white' }}
+                    placeholder="e.g. 1500"
+                  />
+                  <small style={{ color: 'var(--text-muted)' }}>Leave blank for free</small>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Message / Proposal</label>
+                <textarea
+                  value={tradeForm.message}
+                  onChange={(e) => setTradeForm({ ...tradeForm, message: e.target.value })}
+                  style={{ width: '100%', padding: '0.75rem', background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', minHeight: '80px', resize: 'vertical' }}
+                  placeholder="Optional details about logistics or intended use..."
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <Button type="button" variant="outline" style={{ flex: 1 }} onClick={() => setTradeModal({ show: false, listing: null })}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" style={{ flex: 1 }} disabled={sendingTrade}>
+                  {sendingTrade ? 'Sending...' : 'Send Proposal'}
                 </Button>
               </div>
             </form>
