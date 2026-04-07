@@ -6,7 +6,7 @@ const { runMatching } = require('../utils/matchingRunner');
 router.get('/', async (req, res) => {
     try {
         const { status, materialNeeded, limit = 50 } = req.query;
-        let query = `SELECT rr.*, i.company_name as requester_name, i.industry_type FROM resource_requests rr JOIN industries i ON rr.industry_id = i.id WHERE 1=1`;
+        let query = `SELECT rr.*, rr.industry_id as rr_industry_id, i.company_name as requester_name, i.industry_type FROM resource_requests rr JOIN industries i ON rr.industry_id = i.id WHERE 1=1`;
         const params = [];
         let c = 1;
         if (status) { 
@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
                 category: r.category || '',
                 requesterName: r.requester_name, 
                 industryType: r.industry_type, 
-                industryId: r.industry_id,
+                industryId: r.rr_industry_id,
                 createdAt: r.created_at 
             })) 
         });

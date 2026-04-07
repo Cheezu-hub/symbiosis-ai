@@ -57,6 +57,8 @@ router.get('/', async (req, res) => {
         listingLocation:   r.listing_location,
         pricePerUnit:      parseFloat(r.price_per_unit) || 0,
         category:          r.category,
+        resourceRequestId: r.resource_request_id,
+        resourceMaterial:  r.resource_material,
         message:           r.message,
         status:            r.status,
         aiMatchScore:      r.ai_match_score ? parseFloat(r.ai_match_score) : null,
