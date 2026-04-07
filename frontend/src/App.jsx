@@ -17,6 +17,7 @@ import AIInsightsPage from './pages/AIInsightsPage';
 import TradeRequestsPage from './pages/TradeRequestsPage';
 import TransactionsPage from './pages/TransactionsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import SupportPage from './pages/SupportPage';
 
 // ============================================
 // PrivateRoute Component - Protects authenticated routes
@@ -265,6 +266,17 @@ function App() {
             <PrivateRoute isLoggedIn={isLoggedIn}>
               <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
                 <ProfilePage user={user} onLogout={handleLogout} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/support"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <SupportPage />
               </Layout>
             </PrivateRoute>
           }
