@@ -88,9 +88,13 @@ CREATE TABLE IF NOT EXISTS trade_requests (
   status             TEXT    DEFAULT 'pending',
   ai_match_score     NUMERIC,
   responded_at       TIMESTAMP,
+  price_per_unit     NUMERIC DEFAULT 0,
   created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Safe additive migration (run on existing DBs)
+ALTER TABLE trade_requests ADD COLUMN IF NOT EXISTS price_per_unit NUMERIC DEFAULT 0;
 
 -- Transactions (recorded after a trade request is accepted)
 CREATE TABLE IF NOT EXISTS transactions (
