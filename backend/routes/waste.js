@@ -6,7 +6,7 @@ const { runMatching } = require('../utils/matchingRunner');
 router.get('/', async (req, res) => {
   try {
     const { status, materialType, limit = 50 } = req.query;
-    let query = `SELECT wl.*, i.company_name as provider_name, i.industry_type
+    let query = `SELECT wl.*, wl.industry_id as wl_industry_id, i.company_name as provider_name, i.industry_type
                  FROM waste_listings wl JOIN industries i ON wl.industry_id = i.id WHERE 1=1`;
     const params = [];
     let c = 1;
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     query += ` ORDER BY wl.created_at DESC LIMIT $${c}`;
     params.push(parseInt(limit));
     const result = await pool.query(query, params);
-    res.json({ success: true, data: result.rows.map(r => ({ id: r.id, materialType: r.material_type, description: r.description, quantity: parseFloat(r.quantity), unit: r.unit, location: r.location, availableFrom: r.available_from, status: r.status, pricePerUnit: parseFloat(r.price_per_unit) || 0, category: r.category || '', industryId: r.industry_id, providerName: r.provider_name, industryType: r.industry_type, createdAt: r.created_at })) });
+    res.json({ success: true, data: result.rows.map(r => ({ id: r.id, materialType: r.material_type, description: r.description, quantity: parseFloat(r.quantity), unit: r.unit, location: r.location, availableFrom: r.available_from, status: r.status, pricePerUnit: parseFloat(r.price_per_unit) || 0, category: r.category || '', industryId: r.wl_industry_id, providerName: r.provider_name, industryType: r.industry_type, createdAt: r.created_at })) });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch waste listings' }); }
 });
 

@@ -52,7 +52,17 @@ class ScoringService {
   generateTradeRecommendations(company, wasteListings, resourceReqs, opts) {
     return aiEngine.generateTradeRecommendations(company, wasteListings, resourceReqs, opts);
   }
+
+  /**
+   * Generate personalized demand-driven recommendations.
+   * Supply = all available waste from other companies.
+   * Demand = only the current user's own resource requests.
+   */
+  generatePersonalizedRecommendations(userRequests, wasteListings, opts) {
+    return aiEngine.generatePersonalizedRecommendations(userRequests, wasteListings, opts);
+  }
 }
 
 module.exports = new ScoringService();
+
 

@@ -539,13 +539,94 @@ function buildRecommendationReason(tradeScore, direction) {
   return parts.join(' · ');
 }
 
+// ─── 8. Personalized Demand-Driven Recommendations ──────────────────────────
+
+/**
+ * Generate personalized waste-to-resource recommendations for a single user.
+ *
+ * Strategy:
+ *   Supply = all available waste listings from OTHER companies (passed in)
+ *   Demand = the current user's own active resource requests (passed in)
+ *
+ * For each user request, every waste listing is scored via computeTradeScore().
+ * Results are grouped per request and ranked by compositeScore (desc).
+ *
+ * @param {Array}  userRequests  - The logged-in user's own resource_requests rows
+ * @param {Array}  wasteListings - All available waste listings from other companies
+ * @param {object} opts          - { topPerRequest: 5, minScore: 25 }
+ * @returns {Array} Grouped recommendation objects, one entry per user request
+ */
+function generatePersonalizedRecommendations(userRequests, wasteListings, opts = {}) {
+  const { topPerRequest = 5, minScore = 25 } = opts;
+
+  const grouped = [];
+
+  for (const req of userRequests) {
+    const matches = [];
+
+    for (const waste of wasteListings) {
+      const tradeScore = computeTradeScore(waste, req);
+      if (tradeScore.compositeScore < minScore) continue;
+
+      matches.push({
+        wasteListingId:    waste.id,
+        wasteMaterial:     waste.material_type || waste.materialType,
+        wasteProvider:     waste.provider_name || waste.company_name || `Company #${waste.industry_id}`,
+        wasteProviderType: waste.industry_type  || waste.industryType,
+        wasteLocation:     waste.location,
+        wasteQuantity:     parseFloat(waste.quantity),
+        wasteUnit:         waste.unit,
+        wastePrice:        parseFloat(waste.price_per_unit)  || 0,
+        compositeScore:    tradeScore.compositeScore,
+        grade:             tradeScore.grade,
+        breakdown:         tradeScore.breakdown,
+        reason:            buildRecommendationReason(tradeScore, 'buy'),
+        impact:            estimateEnvironmentalImpact(
+          waste.material_type || waste.materialType,
+          Math.min(parseFloat(waste.quantity) || 0, parseFloat(req.quantity) || 0)
+        )
+      });
+    }
+
+    // Sort by composite score descending, take top N
+    matches.sort((a, b) => b.compositeScore - a.compositeScore);
+
+    grouped.push({
+      requestId:       req.id,
+      materialNeeded:  req.material_needed   || req.materialNeeded,
+      description:     req.description       || '',
+      requestQuantity: parseFloat(req.quantity),
+      requestUnit:     req.unit,
+      requestLocation: req.location,
+      requestBudget:   parseFloat(req.price_per_unit) || 0,
+      requiredBy:      req.required_by       || null,
+      status:          req.status,
+      totalMatches:    matches.length,
+      topMatches:      matches.slice(0, topPerRequest)
+    });
+  }
+
+  // Sort groups: requests with most/highest matches first
+  grouped.sort((a, b) => {
+    if (b.topMatches.length !== a.topMatches.length)
+      return b.topMatches.length - a.topMatches.length;
+    const aTop = a.topMatches[0]?.compositeScore || 0;
+    const bTop = b.topMatches[0]?.compositeScore || 0;
+    return bTop - aTop;
+  });
+
+  return grouped;
+}
+
 module.exports = {
   getWasteRecommendations, findSmartMatches, computeSymbiosisScore,
   detectOpportunities, estimateEnvironmentalImpact,
   resolveMaterial, computeMaterialSimilarity, getSimilarMaterials,
   jaccardSimilarity, normalizeMaterial, estimateDistance,
-  // ─── New Trade Recommendation Exports ─────────────────────────────────
+  // ─── Trade Recommendation Exports ─────────────────────────────────────
   computeTradeScore, computeDistanceScore, computeMaterialMatchScore,
-  computePriceScore, generateTradeRecommendations
+  computePriceScore, generateTradeRecommendations,
+  // ─── Personalized Demand-Driven Recommendation Export ─────────────────
+  generatePersonalizedRecommendations
 };
 

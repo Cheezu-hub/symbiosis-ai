@@ -328,7 +328,7 @@ return (
                   {aiSuggestions[listing.id] ? 'Refresh AI Ideas' : 'AI Ideas'}
                 </Button>
                 
-                {listing.industryId !== user?.id ? (
+                {listing.industryId != user?.id ? (
                   <Button
                     variant="primary"
                     size="sm"
