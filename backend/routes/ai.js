@@ -286,5 +286,72 @@ router.post('/match-preview', (req, res) => {
 // Already moved to top.
 
 
+// ─── GET /api/ai/personalized-recommendations (auth required) ───────────────
+// Demand-driven personalised matching:
+//   Supply  = all available waste listings from OTHER companies
+//   Demand  = ONLY the current user's own active resource requests
+//
+// Query params:
+//   topPerRequest = max results per request (default: 5)
+//   minScore      = minimum composite score to include (default: 25)
+router.get('/personalized-recommendations', authenticateToken, async (req, res) => {
+  try {
+    const userId         = req.user.id;
+    const topPerRequest  = Math.min(parseInt(req.query.topPerRequest) || 5, 10);
+    const minScore       = parseInt(req.query.minScore) || 25;
+
+    // ── 1. The user's own active resource requests (demand) ──────────────────
+    const userRequestsRes = await pool.query(
+      `SELECT rr.*, i.company_name as requester_name, i.industry_type, i.location as company_location
+       FROM resource_requests rr
+       JOIN industries i ON rr.industry_id = i.id
+       WHERE rr.industry_id = $1 AND rr.status = 'active'
+       ORDER BY rr.created_at DESC`,
+      [userId]
+    );
+    const userRequests = userRequestsRes.rows;
+
+    // ── 2. All available waste listings from OTHER companies (supply) ─────────
+    const wasteRes = await pool.query(
+      `SELECT wl.*, i.company_name as provider_name, i.industry_type, i.location as company_location
+       FROM waste_listings wl
+       JOIN industries i ON wl.industry_id = i.id
+       WHERE wl.status = 'available' AND wl.industry_id != $1`,
+      [userId]
+    );
+    const wasteListings = wasteRes.rows;
+
+    // ── 3. Run the personalised matching engine ───────────────────────────────
+    const groups = scoringService.generatePersonalizedRecommendations(
+      userRequests, wasteListings, { topPerRequest, minScore }
+    );
+
+    // ── 4. Summary stats ─────────────────────────────────────────────────────
+    const totalMatches   = groups.reduce((s, g) => s + g.totalMatches, 0);
+    const requestsWithMatches = groups.filter(g => g.topMatches.length > 0).length;
+    const allScores = groups.flatMap(g => g.topMatches.map(m => m.compositeScore));
+    const avgScore  = allScores.length > 0
+      ? Math.round(allScores.reduce((s, v) => s + v, 0) / allScores.length)
+      : 0;
+
+    res.json({
+      success: true,
+      data: {
+        userId,
+        totalUserRequests:    userRequests.length,
+        totalWasteListings:   wasteListings.length,
+        requestsWithMatches,
+        totalMatchesFound:    totalMatches,
+        averageMatchScore:    avgScore,
+        recommendations:      groups
+      }
+    });
+  } catch (err) {
+    console.error('AI personalized-recommendations error:', err);
+    res.status(500).json({ success: false, error: 'Personalized recommendation generation failed' });
+  }
+});
+
+
 module.exports = router;
 

@@ -98,6 +98,11 @@ export const aiAPI = {
   getMatchPreview: (data) => api.post('/ai/match-preview', data),
   // ─── Run the full AI matching pass and persist results to DB ────────────
   runMatching: () => api.post('/ai/run-matching'),
+  // ─── Personalized Demand-Driven Recommendations ─────────────────────────
+  // Supply = all available waste from other companies
+  // Demand = only the current user's own active resource requests
+  getPersonalizedRecommendations: (topPerRequest = 5, minScore = 25) =>
+    api.get(`/ai/personalized-recommendations?topPerRequest=${topPerRequest}&minScore=${minScore}`),
 };
 
 // Trade Requests APIs

@@ -3,9 +3,10 @@ import { aiAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
-import { Zap, Search, Leaf, Loader, CheckCircle } from 'lucide-react';
+import { Zap, Search, Leaf, Loader, CheckCircle, Target } from 'lucide-react';
 import AIOpportunities from '../components/ai/AIOpportunities';
 import EnvironmentalImpact from '../components/ai/EnvironmentalImpact';
+import PersonalizedRecommendations from '../components/ai/PersonalizedRecommendations';
 
 const AIInsightsPage = () => {
   const [wasteQuery, setWasteQuery] = useState('');
@@ -21,7 +22,7 @@ const AIInsightsPage = () => {
     try {
       const [recRes, impactRes] = await Promise.all([
         aiAPI.getRecommendations(wasteQuery),
-        aiAPI.estimateImpact({ materialType: wasteQuery, quantityTons: 10 }) // Default 10 tons for estimation
+        aiAPI.estimateImpact({ materialType: wasteQuery, quantityTons: 10 })
       ]);
       setResults(recRes.data.data);
       setImpactData(impactRes.data.data);
@@ -34,6 +35,7 @@ const AIInsightsPage = () => {
 
   return (
     <div className="page-container fade-in-up">
+      {/* ── Page Header ────────────────────────────────────────────────────── */}
       <div className="page-header flex justify-between items-center mb-6">
         <div>
           <h1 className="ai-gradient-text" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -43,12 +45,27 @@ const AIInsightsPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1" style={{ gridTemplateColumns: '1fr', gap: '2rem', marginBottom: '2rem' }}>
+      {/* ── Section 1: Personalized "For Your Requests" ─────────────────────── */}
+      <Card
+        className="ai-card"
+        style={{
+          marginBottom: '2rem',
+          borderColor: 'var(--primary)',
+          background: 'linear-gradient(135deg, var(--bg-card), rgba(88, 224, 119, 0.04))',
+          boxShadow: '0 0 32px rgba(88, 224, 119, 0.07)'
+        }}
+      >
+        <PersonalizedRecommendations topPerRequest={5} />
+      </Card>
+
+      {/* ── Section 2: AI Smart Matches (all users, global opportunities) ───── */}
+      <div style={{ marginBottom: '2rem' }}>
         <AIOpportunities limit={3} />
       </div>
 
+      {/* ── Section 3: Material Intelligence Explorer + Impact ───────────────── */}
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
-        {/* Left Column: Explorer */}
+        {/* Left: Explorer */}
         <Card>
           <div className="flex items-center gap-2 mb-4">
             <Search className="text-primary" />
@@ -104,7 +121,7 @@ const AIInsightsPage = () => {
           )}
         </Card>
 
-        {/* Right Column: Impact */}
+        {/* Right: Impact */}
         <div>
           {impactData ? (
              <div className="fade-in-up">
@@ -127,3 +144,4 @@ const AIInsightsPage = () => {
 };
 
 export default AIInsightsPage;
+
