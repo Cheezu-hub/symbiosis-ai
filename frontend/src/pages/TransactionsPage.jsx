@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { transactionAPI } from '../services/api';
 import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
-import { DollarSign, Tremor, RefreshCw, ArrowUpRight, ArrowDownRight, Leaf, Droplet, Zap } from 'lucide-react';
+import { DollarSign, RefreshCw, ArrowUpRight, ArrowDownRight, Leaf, Droplet } from 'lucide-react';
 
 const TransactionsPage = ({ user }) => {
   const [transactions, setTransactions] = useState([]);
@@ -11,11 +10,7 @@ const TransactionsPage = ({ user }) => {
   const [error, setError] = useState('');
   const [role, setRole] = useState('all');
 
-  useEffect(() => {
-    fetchData();
-  }, [role]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -31,7 +26,11 @@ const TransactionsPage = ({ user }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [role]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <div className="page-container fade-in-up">

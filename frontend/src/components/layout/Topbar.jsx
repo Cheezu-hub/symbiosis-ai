@@ -3,7 +3,6 @@ import { Search, Bell, Settings, Menu } from 'lucide-react';
 
 const Topbar = ({ user, onMenuClick }) => {
   const [searchFocused, setSearchFocused] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   return (
     <header

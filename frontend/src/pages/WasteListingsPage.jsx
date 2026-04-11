@@ -18,7 +18,6 @@ const emptyForm = {
 
 const WasteListingsPage = ({ user }) => {
   const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -48,14 +47,12 @@ const WasteListingsPage = ({ user }) => {
   }, []);
 
   const fetchListings = async () => {
-    setLoading(true);
     try {
       const res = await wasteAPI.getAll();
       setListings(res.data.data || []);
     } catch (err) {
       setError('Failed to load waste listings.');
     } finally {
-      setLoading(false);
     }
   };
 
@@ -328,7 +325,7 @@ return (
                   {aiSuggestions[listing.id] ? 'Refresh AI Ideas' : 'AI Ideas'}
                 </Button>
                 
-                {listing.industryId != user?.id ? (
+                {listing.industryId !== user?.id ? (
                   <Button
                     variant="primary"
                     size="sm"

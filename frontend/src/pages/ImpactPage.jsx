@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Leaf, TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { impactAPI } from '../services/api';
 import Card from '../components/ui/Card';
@@ -11,15 +11,9 @@ const ImpactPage = ({ user }) => {
   const [report, setReport] = useState([]);
   const [score, setScore] = useState({});
   const [period, setPeriod] = useState('monthly');
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchAll();
-  }, [period]);
-
-  const fetchAll = async () => {
-    setLoading(true);
+  const fetchAll = useCallback(async () => {
     setError('');
     try {
       const [metricsRes, reportRes, scoreRes] = await Promise.all([
@@ -32,10 +26,12 @@ const ImpactPage = ({ user }) => {
       setScore(scoreRes.data.data || {});
     } catch (err) {
       setError('Failed to load impact data.');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const impactCards = [
     { icon: Wind, title: 'CO₂ Reduced', value: (metrics.co2Reduced || 0).toLocaleString(), unit: 'tons', color: 'success' },

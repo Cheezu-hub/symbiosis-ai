@@ -10,14 +10,11 @@ import {
   ArrowRight,
   CheckCircle,
   Users,
-  Shield,
-  BarChart3
+  Shield
 } from 'lucide-react';
-import { authAPI } from '../services/api';
 
 const HomePage = ({ onLogin }) => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({
     companies: 0,
     wasteDiverted: 0,
@@ -816,7 +813,8 @@ const HomePage = ({ onLogin }) => {
               {['Twitter', 'LinkedIn', 'GitHub'].map((social) => (
                 <a
                   key={social}
-                  href="#"
+                  href="#!"
+                  onClick={(e) => e.preventDefault()}
                   style={{
                     width: '40px',
                     height: '40px',

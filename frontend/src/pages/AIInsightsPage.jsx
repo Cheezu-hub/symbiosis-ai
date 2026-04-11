@@ -3,7 +3,7 @@ import { aiAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
-import { Zap, Search, Leaf, Loader, CheckCircle, Target } from 'lucide-react';
+import { Zap, Search, Leaf, Loader, CheckCircle } from 'lucide-react';
 import AIOpportunities from '../components/ai/AIOpportunities';
 import EnvironmentalImpact from '../components/ai/EnvironmentalImpact';
 import PersonalizedRecommendations from '../components/ai/PersonalizedRecommendations';
