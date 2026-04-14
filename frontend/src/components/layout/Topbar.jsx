@@ -109,6 +109,7 @@ const Topbar = ({ user, onMenuClick }) => {
 
         {/* Settings Icon */}
         <button
+          onClick={() => window.location.href = '/profile'}
           style={{
             background: 'transparent',
             border: 'none',
