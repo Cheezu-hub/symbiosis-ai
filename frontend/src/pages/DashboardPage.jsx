@@ -29,6 +29,65 @@ import StatCard from '../components/ui/StatCard';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 
+import Skeleton from '../components/ui/Skeleton';
+
+const DashboardSkeleton = () => (
+  <div className="page-container">
+    <div style={{ marginBottom: '2rem' }}>
+      <Skeleton variant="text" width="300px" height="2.5rem" style={{ marginBottom: '0.5rem' }} />
+      <Skeleton variant="text" width="450px" height="1rem" />
+    </div>
+
+    <div className="impact-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      {[1, 2, 3].map(i => (
+        <Card key={i} style={{ height: '180px', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            <Skeleton variant="circular" width="48px" height="48px" />
+            <Skeleton variant="text" width="100px" />
+          </div>
+          <Skeleton variant="text" width="140px" height="2.5rem" style={{ marginBottom: '0.5rem' }} />
+          <Skeleton variant="text" width="60px" />
+        </Card>
+      ))}
+    </div>
+
+    <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      {[1, 2, 3, 4].map(i => (
+        <Card key={i} style={{ height: '140px', padding: '1.5rem' }}>
+          <Skeleton variant="circular" width="40px" height="40px" style={{ marginBottom: '1rem' }} />
+          <Skeleton variant="text" width="80px" height="1.5rem" style={{ marginBottom: '0.5rem' }} />
+          <Skeleton variant="text" width="120px" />
+        </Card>
+      ))}
+    </div>
+
+    <Card style={{ marginBottom: '2rem', height: '180px' }}>
+      <Skeleton variant="text" width="200px" height="1.5rem" style={{ marginBottom: '2.5rem' }} />
+      <div style={{ display: 'flex', gap: '2rem' }}>
+        <Skeleton variant="circular" width="80px" height="80px" />
+        <div style={{ flex: 1 }}>
+          <Skeleton variant="text" width="150px" height="1.25rem" style={{ marginBottom: '1rem' }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+            <Skeleton variant="text" />
+            <Skeleton variant="text" />
+          </div>
+        </div>
+      </div>
+    </Card>
+
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <Card style={{ height: '350px' }}>
+        <Skeleton variant="text" width="180px" height="1.5rem" style={{ marginBottom: '2rem' }} />
+        <Skeleton variant="rectangular" width="100%" height="240px" />
+      </Card>
+      <Card style={{ height: '350px' }}>
+        <Skeleton variant="text" width="180px" height="1.5rem" style={{ marginBottom: '2rem' }} />
+        <Skeleton variant="rectangular" width="100%" height="240px" />
+      </Card>
+    </div>
+  </div>
+);
+
 const DashboardPage = ({ user }) => {
   const [stats, setStats] = useState({
     wasteListed: 0,
@@ -111,7 +170,8 @@ const DashboardPage = ({ user }) => {
       setError('Failed to load dashboard data. Make sure the backend is running.');
       console.error(err);
     } finally {
-      setLoading(false);
+      // Small timeout to give the skeleton some "screen time"
+      setTimeout(() => setLoading(false), 900);
     }
   };
 
@@ -146,36 +206,8 @@ const DashboardPage = ({ user }) => {
     }
   ];
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          background: 'var(--bg-primary, #121416)'
-        }}
-      >
-        <div
-          className="spinner"
-          style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid var(--border, rgba(55, 57, 59, 0.5))',
-            borderTopColor: 'var(--primary, #58e077)',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite'
-          }}
-        />
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
+  if (loading && !error) {
+    return <DashboardSkeleton />;
   }
 
   return (

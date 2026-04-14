@@ -16,6 +16,46 @@ const emptyForm = {
   category: ''
 };
 
+import Skeleton from '../components/ui/Skeleton';
+
+const WasteListingsSkeleton = () => (
+  <div className="page-container">
+    <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div>
+        <Skeleton variant="text" width="250px" height="2.5rem" style={{ marginBottom: '0.5rem' }} />
+        <Skeleton variant="text" width="400px" height="1rem" />
+      </div>
+      <Skeleton variant="rectangular" width="180px" height="45px" />
+    </div>
+
+    <Card style={{ marginBottom: '2rem', height: '80px' }}>
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <Skeleton variant="rectangular" width="100%" height="40px" style={{ flex: 1 }} />
+        <Skeleton variant="rectangular" width="100px" height="40px" />
+      </div>
+    </Card>
+
+    <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+      {[1, 2, 3, 4, 5, 6].map(i => (
+        <Card key={i} style={{ height: '350px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <Skeleton variant="text" width="150px" height="1.25rem" />
+            <Skeleton variant="text" width="80px" />
+          </div>
+          <Skeleton variant="text" width="100%" height="3rem" style={{ marginBottom: '1.5rem' }} />
+          <Skeleton variant="text" width="120px" style={{ marginBottom: '0.5rem' }} />
+          <Skeleton variant="text" width="100px" style={{ marginBottom: '0.5rem' }} />
+          <Skeleton variant="text" width="160px" style={{ marginBottom: '1.5rem' }} />
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Skeleton variant="rectangular" style={{ flex: 1 }} height="36px" />
+            <Skeleton variant="rectangular" style={{ flex: 1 }} height="36px" />
+          </div>
+        </Card>
+      ))}
+    </div>
+  </div>
+);
+
 const WasteListingsPage = ({ user }) => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,9 +95,14 @@ const WasteListingsPage = ({ user }) => {
     } catch (err) {
       setError('Failed to load waste listings.');
     } finally {
-      setLoading(false);
+      // Intentional delay for better UX (seeing the skeletons)
+      setTimeout(() => setLoading(false), 900);
     }
   };
+
+  if (loading && !error) {
+    return <WasteListingsSkeleton />;
+  }
 
   const openCreateModal = () => {
     setEditingId(null);

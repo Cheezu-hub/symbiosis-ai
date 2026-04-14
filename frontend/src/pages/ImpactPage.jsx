@@ -4,7 +4,54 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { impactAPI } from '../services/api';
 import Card from '../components/ui/Card';
 
+import Skeleton from '../components/ui/Skeleton';
+
 const COLORS = ['#1F7A8C', '#10B981', '#F59E0B', '#00C9B1'];
+
+const ImpactSkeleton = () => (
+  <div className="page-container">
+    <div className="page-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between' }}>
+      <div>
+        <Skeleton variant="text" width="200px" height="2.5rem" style={{ marginBottom: '0.5rem' }} />
+        <Skeleton variant="text" width="350px" height="1rem" />
+      </div>
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <Skeleton variant="rectangular" width="120px" height="40px" />
+        <Skeleton variant="rectangular" width="100px" height="40px" />
+      </div>
+    </div>
+
+    <div className="impact-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+      {[1, 2, 3].map(i => (
+        <Card key={i} style={{ height: '140px', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Skeleton variant="text" width="120px" height="2.5rem" style={{ marginBottom: '0.5rem' }} />
+          <Skeleton variant="text" width="100px" height="1rem" />
+        </Card>
+      ))}
+    </div>
+
+    <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      {[1, 2, 3, 4].map(i => (
+        <Card key={i} style={{ height: '160px', padding: '1.5rem' }}>
+          <Skeleton variant="circular" width="48px" height="48px" style={{ marginBottom: '1rem' }} />
+          <Skeleton variant="text" width="80px" height="2rem" style={{ marginBottom: '0.5rem' }} />
+          <Skeleton variant="text" width="140px" height="1rem" />
+        </Card>
+      ))}
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
+      <Card style={{ height: '400px' }}>
+        <Skeleton variant="text" width="150px" height="1.5rem" style={{ marginBottom: '2rem' }} />
+        <Skeleton variant="rectangular" width="100%" height="280px" />
+      </Card>
+      <Card style={{ height: '400px' }}>
+        <Skeleton variant="text" width="150px" height="1.5rem" style={{ marginBottom: '2rem' }} />
+        <Skeleton variant="rectangular" width="100%" height="280px" />
+      </Card>
+    </div>
+  </div>
+);
 
 const ImpactPage = ({ user }) => {
   const [metrics, setMetrics] = useState({});
@@ -33,9 +80,14 @@ const ImpactPage = ({ user }) => {
     } catch (err) {
       setError('Failed to load impact data.');
     } finally {
-      setLoading(false);
+      // Simulate a slightly longer load to actually see the skeletons
+      setTimeout(() => setLoading(false), 800);
     }
   };
+
+  if (loading && !error) {
+    return <ImpactSkeleton />;
+  }
 
   const impactCards = [
     { icon: Wind, title: 'CO₂ Reduced', value: (metrics.co2Reduced || 0).toLocaleString(), unit: 'tons', color: 'success' },
