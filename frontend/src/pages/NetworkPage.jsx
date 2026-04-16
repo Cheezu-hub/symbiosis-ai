@@ -27,7 +27,6 @@ const layoutNodes = (nodes) => {
 const NetworkPage = ({ user }) => {
   const [nodes, setNodes] = useState([]);
   const [links, setLinks] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tooltip, setTooltip] = useState(null);
 
@@ -36,7 +35,6 @@ const NetworkPage = ({ user }) => {
   }, []);
 
   const fetchNetwork = async () => {
-    setLoading(true);
     setError('');
     try {
       const res = await industryAPI.getNetwork();
@@ -46,7 +44,6 @@ const NetworkPage = ({ user }) => {
     } catch (err) {
       setError('Failed to load network data.');
     } finally {
-      setLoading(false);
     }
   };
 

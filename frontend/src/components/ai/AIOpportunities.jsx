@@ -1,5 +1,5 @@
 /* AI Components - AIOpportunities */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { aiAPI } from '../../services/api';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
@@ -10,11 +10,7 @@ const AIOpportunities = ({ limit = 3 }) => {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOpportunities();
-  }, [limit]);
-
-  const fetchOpportunities = async () => {
+  const fetchOpportunities = useCallback(async () => {
     try {
       const res = await aiAPI.getOpportunities(limit);
       setOpportunities(res.data.data.opportunities || []);
@@ -23,7 +19,11 @@ const AIOpportunities = ({ limit = 3 }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit]);
+
+  useEffect(() => {
+    fetchOpportunities();
+  }, [fetchOpportunities]);
 
   if (loading) {
     return (

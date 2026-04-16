@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building, Mail, Phone, MapPin, Shield, Bell, LogOut, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Building, Mail, Phone, MapPin, Bell, LogOut, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { authAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -7,7 +7,6 @@ import Badge from '../components/ui/Badge';
 
 const ProfilePage = ({ user, onLogout }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -32,7 +31,6 @@ const ProfilePage = ({ user, onLogout }) => {
   }, []);
 
   const fetchProfile = async () => {
-    setLoading(true);
     try {
       const res = await authAPI.getProfile();
       const u = res.data.user;
@@ -48,7 +46,6 @@ const ProfilePage = ({ user, onLogout }) => {
     } catch (err) {
       setError('Failed to load profile.');
     } finally {
-      setLoading(false);
     }
   };
 

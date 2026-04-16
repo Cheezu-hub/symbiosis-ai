@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Leaf, TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TrendingUp, Package, Droplets, Wind, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { impactAPI } from '../services/api';
 import Card from '../components/ui/Card';
@@ -58,15 +58,9 @@ const ImpactPage = ({ user }) => {
   const [report, setReport] = useState([]);
   const [score, setScore] = useState({});
   const [period, setPeriod] = useState('monthly');
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchAll();
-  }, [period]);
-
-  const fetchAll = async () => {
-    setLoading(true);
+  const fetchAll = useCallback(async () => {
     setError('');
     try {
       const [metricsRes, reportRes, scoreRes] = await Promise.all([
@@ -83,7 +77,11 @@ const ImpactPage = ({ user }) => {
       // Simulate a slightly longer load to actually see the skeletons
       setTimeout(() => setLoading(false), 800);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   if (loading && !error) {
     return <ImpactSkeleton />;

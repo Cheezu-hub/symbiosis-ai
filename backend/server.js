@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  'https://symbiosis-ai.vercel.app',
   'http://localhost:3000',
   'http://localhost:3001'
 ];

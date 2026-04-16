@@ -19,7 +19,6 @@ const emptyForm = {
 
 const ResourceRequestsPage = ({ user }) => {
   const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -32,14 +31,12 @@ const ResourceRequestsPage = ({ user }) => {
   }, []);
 
   const fetchRequests = async () => {
-    setLoading(true);
     try {
       const res = await resourceAPI.getAll();
       setRequests(res.data.data || []);
     } catch (err) {
       setError('Failed to load resource requests.');
     } finally {
-      setLoading(false);
     }
   };
 
@@ -384,7 +381,7 @@ return (
                   {req.materialNeeded}
                 </h3>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  {req.industryId == user?.id && (
+                  {req.industryId === user?.id && (
                     <Badge variant="outline" style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>
                       My Request
                     </Badge>
@@ -451,7 +448,7 @@ return (
                 <MapPin size={16} />
                 <span>{req.location || '—'}</span>
               </div>
-              {req.industryId == user?.id && (
+              {req.industryId === user?.id && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <Button
                     variant="outline"

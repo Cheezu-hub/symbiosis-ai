@@ -9,7 +9,6 @@ import CoordinationPanel from '../components/ui/CoordinationPanel';
 
 const MatchesPage = ({ user }) => {
   const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
   const [error, setError] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -20,7 +19,6 @@ const MatchesPage = ({ user }) => {
   }, []);
 
   const fetchMatches = async () => {
-    setLoading(true);
     setError('');
     try {
       const res = await matchAPI.getAll();
@@ -28,7 +26,6 @@ const MatchesPage = ({ user }) => {
     } catch (err) {
       setError('Failed to load matches. Make sure you are logged in.');
     } finally {
-      setLoading(false);
     }
   };
 
