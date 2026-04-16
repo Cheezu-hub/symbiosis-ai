@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Bell, Settings, Menu } from 'lucide-react';
 
-const Topbar = ({ user, onMenuClick }) => {
+const Topbar = ({ user, onMenuClick, sidebarCollapsed }) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -11,7 +11,7 @@ const Topbar = ({ user, onMenuClick }) => {
       style={{
         position: 'fixed',
         top: 0,
-        left: '260px',
+        left: sidebarCollapsed ? '72px' : '260px',
         right: 0,
         height: '64px',
         display: 'flex',
@@ -23,11 +23,11 @@ const Topbar = ({ user, onMenuClick }) => {
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         zIndex: 999,
-        transition: 'left 0.3s ease'
+        transition: 'all 0.3s ease'
       }}
     >
       {/* Left Section */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
         <button
           onClick={onMenuClick}
           style={{
@@ -43,7 +43,7 @@ const Topbar = ({ user, onMenuClick }) => {
         </button>
 
         {/* Search Bar */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: 1, maxWidth: '600px' }}>
           <Search
             size={18}
             style={{
@@ -58,10 +58,8 @@ const Topbar = ({ user, onMenuClick }) => {
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
             style={{
-              paddingLeft: '2.5rem',
-              paddingRight: '1rem',
-              padding: '0.5rem 1rem',
-              width: '300px',
+              padding: '0.6rem 1rem 0.6rem 2.8rem',
+              width: '100%',
               background: 'var(--bg-tertiary, #282a2c)',
               border: `1px solid ${searchFocused ? 'var(--primary, #58e077)' : 'var(--border, rgba(55, 57, 59, 0.5))'}`,
               borderRadius: 'var(--radius-lg, 12px)',

@@ -37,6 +37,7 @@ const Layout = ({ children, isLoggedIn, user, onLogout }) => {
         {isLoggedIn && (
           <Topbar
             user={user}
+            sidebarCollapsed={sidebarCollapsed}
             onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           />
         )}
