@@ -21,7 +21,9 @@ router.get('/', async (req, res) => {
                    wl.material_type as waste_type, wl.quantity as waste_quantity, wl.unit as waste_unit, wl.location as waste_location, 
                    rr.material_needed as resource_type, rr.location as resource_location, 
                    i1.company_name as waste_provider, i1.industry_type as waste_provider_type, 
-                   i2.company_name as resource_seeker, i2.industry_type as resource_seeker_type 
+                   i1.contact_email as waste_provider_email, i1.contact_phone as waste_provider_phone,
+                   i2.company_name as resource_seeker, i2.industry_type as resource_seeker_type,
+                   i2.contact_email as resource_seeker_email, i2.contact_phone as resource_seeker_phone
             FROM matches m 
             JOIN waste_listings wl ON m.waste_listing_id = wl.id 
             JOIN resource_requests rr ON m.resource_request_id = rr.id 
@@ -79,7 +81,12 @@ router.get('/', async (req, res) => {
                     costSavings: safeFloat(r.cost_savings),
                     logisticsCost: safeFloat(r.logistics_cost),
                     createdAt: r.created_at,
-                    acceptedAt: r.accepted_at
+                    acceptedAt: r.accepted_at,
+                    // Conditional contact sharing
+                    contactInfo: r.status === 'accepted' ? {
+                        wasteProvider: { name: r.waste_provider, email: r.waste_provider_email, phone: r.waste_provider_phone },
+                        resourceSeeker: { name: r.resource_seeker, email: r.resource_seeker_email, phone: r.resource_seeker_phone }
+                    } : null
                 })),
                 pagination: {
                     total: parseInt(count.rows[0].total),

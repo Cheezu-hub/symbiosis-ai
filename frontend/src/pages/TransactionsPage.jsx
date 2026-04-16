@@ -1,7 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { transactionAPI } from '../services/api';
 import Card from '../components/ui/Card';
-import { DollarSign, RefreshCw, ArrowUpRight, ArrowDownRight, Leaf, Droplet } from 'lucide-react';
+import Badge from '../components/ui/Badge';
+import { DollarSign, RefreshCw, ArrowUpRight, ArrowDownRight, Leaf, Droplet, Phone, Mail, ExternalLink } from 'lucide-react';
+
+// ─── Inline contact chip ─────────────────────────────────────────────────────
+const ContactChip = ({ icon: Icon, href, label, fallback }) => {
+  if (!label || label.trim() === '') {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+        <Icon size={12} /> {fallback}
+      </span>
+    );
+  }
+  return (
+    <a
+      href={href}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '4px',
+        fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 500,
+        textDecoration: 'none', padding: '3px 8px', borderRadius: '6px',
+        background: 'rgba(88,224,119,0.1)', border: '1px solid rgba(88,224,119,0.25)',
+        transition: 'background 0.15s'
+      }}
+    >
+      <Icon size={12} /> {label} <ExternalLink size={9} style={{ opacity: 0.5 }} />
+    </a>
+  );
+};
 
 const TransactionsPage = ({ user }) => {
   const [transactions, setTransactions] = useState([]);
@@ -174,13 +200,27 @@ const TransactionsPage = ({ user }) => {
                     </div>
                   </div>
 
-                  {/* Counterparty */}
+                  {/* Counterparty + Contact */}
                   <div>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
                       {isSeller ? 'Sold to' : 'Bought from'}
                     </p>
-                    <p style={{ fontWeight: 600 }}>{isSeller ? tx.buyer.name : tx.seller.name}</p>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{isSeller ? tx.buyer.type : tx.seller.type}</p>
+                    <p style={{ fontWeight: 600, marginBottom: '2px' }}>{isSeller ? tx.buyer.name : tx.seller.name}</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: '0.5rem' }}>{isSeller ? tx.buyer.type : tx.seller.type}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <ContactChip
+                        icon={Phone}
+                        href={`tel:${isSeller ? tx.buyer.phone : tx.seller.phone}`}
+                        label={isSeller ? tx.buyer.phone : tx.seller.phone}
+                        fallback="No phone"
+                      />
+                      <ContactChip
+                        icon={Mail}
+                        href={`mailto:${isSeller ? tx.buyer.email : tx.seller.email}`}
+                        label={isSeller ? tx.buyer.email : tx.seller.email}
+                        fallback="No email"
+                      />
+                    </div>
                   </div>
 
                   {/* Environment Impact */}

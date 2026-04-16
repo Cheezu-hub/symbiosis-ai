@@ -15,21 +15,23 @@ SymbioTech is a comprehensive digital platform designed to facilitate **Industri
 
 ### 2. **AI-Driven Matchmaking**
 *   **Intelligent Scoring:** Automatically matches waste listings with resource requests based on material compatibility, quantity, and geographic proximity.
-*   **Insights:** Provides data-driven recommendations on potential symbiosis opportunities that might not be obvious to human operators.
+*   **AI Insights:** Provides data-driven recommendations and visualization of potential symbiosis opportunities.
+*   **Match Notifications:** Real-time updates when the AI engine finds a new compatible partner.
 
 ### 3. **Trade & Transaction Management**
-*   **Trade Requests:** Securely negotiate and manage exchange requests between companies.
+*   **Interactive Negotiations:** Securely negotiate and manage exchange requests between companies.
 *   **Financial Ledger:** Track all transactions, pricing, and quantities in a centralized ledger.
-*   **Notifications:** Real-time updates on new matches, requested trades, and accepted deals.
+*   **Status Tracking:** Monitor the lifecycle of a trade from request to completion.
 
 ### 4. **Environmental Impact Tracking**
 *   **Sustainability Score:** Every industry receives a score based on their participation in the circular economy.
 *   **Impact Metrics:** Visualize CO2 reduction (tons), waste diverted from landfill (tons), and energy/water savings.
-*   **Reports:** Generate automated sustainability reports for corporate social responsibility (CSR) initiatives.
+*   **Dynamic Reports:** Generate automated sustainability reports for CSR initiatives.
 
-### 5. **Network Visualization**
-*   **Interactive Map:** View nearby industries and resource flows to optimize logistics and transport costs.
-*   **Industry Profiles:** Manage company details, transport radius, and sustainability preferences.
+### 5. **Enhanced User Experience**
+*   **Interactive Map/Network:** View nearby industries and resource flows to optimize logistics.
+*   **Profile & Settings:** Manage company details, notification preferences, and transport radius.
+*   **Custom Notifications:** Stay updated with a dedicated notification center for all account activities.
 
 ---
 
@@ -39,7 +41,7 @@ SymbioTech is a comprehensive digital platform designed to facilitate **Industri
 | :--- | :--- |
 | **Frontend** | React, Tailwind CSS, Lucide Icons, Recharts |
 | **Backend** | Node.js, Express.js |
-| **Database** | SQLite (via `better-sqlite3`) — *Zero configuration required* |
+| **Database** | PostgreSQL |
 | **AI Engine** | Python (Scikit-learn, Pandas) |
 | **Authentication** | JSON Web Tokens (JWT) |
 
@@ -49,10 +51,17 @@ SymbioTech is a comprehensive digital platform designed to facilitate **Industri
 
 ```text
 ism_pg/
-├── frontend/         # React Application (UI + State)
-├── backend/          # Node.js + Express API
-├── ai-engine/        # Python AI matching logic
-├── database/         # SQL Schema and Migration scripts
+├── ai-engine/        # Python AI matching logic and data processing
+├── backend/          # Node.js + Express API server
+│   ├── routes/       # API route definitions
+│   ├── services/     # Business logic and DB interactions
+│   └── server.js     # Entry point
+├── database/         # SQL Schema, migrations, and seed data
+├── frontend/         # React Application (UI + components)
+│   ├── src/
+│   │   ├── components/ # Reusable UI and Layout components
+│   │   ├── pages/      # Full-page views
+│   │   └── services/   # Frontend API client
 └── README.md         # Project documentation
 ```
 
@@ -61,7 +70,8 @@ ism_pg/
 ## 🚀 Quick Start (Local Setup)
 
 ### 1. Prerequisites
-*   Node.js (v16+)
+*   Node.js (v18+)
+*   PostgreSQL (v14+)
 *   Python (v3.8+) — *Required for the AI Engine*
 *   npm or yarn
 
@@ -69,11 +79,10 @@ ism_pg/
 ```bash
 cd backend
 npm install
-# Create local .env from example (or use defaults)
+# Create local .env from example and configure your PostgreSQL credentials
 cp .env.example .env
 npm run dev
 ```
-> The SQLite database will be automatically initialized on the first run.
 
 ### 3. Frontend Setup
 ```bash
@@ -89,17 +98,6 @@ cd ai-engine
 pip install -r requirements.txt
 python matching.py
 ```
-
----
-
-## 📊 Database Overview
-
-The system runs on a relational schema optimized for resource flows:
-*   **Industries:** Company profiles and sustainability scores.
-*   **Waste Listings / Resource Requests:** The core marketplace entities.
-*   **Trade Requests:** The workflow for inter-company negotiations.
-*   **Transactions:** Finalized exchanges with recorded environmental impact values.
-*   **Impact Metrics:** Temporal data for tracking sustainability gains over time.
 
 ---
 

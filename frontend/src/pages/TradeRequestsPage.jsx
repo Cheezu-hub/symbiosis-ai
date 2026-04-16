@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRightLeft, Check, X, RefreshCw, Briefcase, MapPin, Package, Clock } from 'lucide-react';
+import {
+  ArrowRightLeft, Check, X, RefreshCw, Briefcase, MapPin, Package,
+  Clock, Phone, Mail, ExternalLink, Building2, Handshake
+} from 'lucide-react';
 import { tradeAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
+import CoordinationPanel from '../components/ui/CoordinationPanel';
+
+// Removed local ContactPanel in favor of reusable CoordinationPanel
 
 const TradeRequestsPage = ({ user }) => {
   const [requests, setRequests] = useState([]);
@@ -188,9 +194,14 @@ const TradeRequestsPage = ({ user }) => {
                     {activeTab === 'incoming' ? 'Requested By' : 'Requested From'}
                   </h4>
                   <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <p style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+                    <p style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.25rem' }}>
                       {activeTab === 'incoming' ? req.sender?.name : req.receiver?.name}
                     </p>
+                    {(activeTab === 'incoming' ? req.sender?.type : req.receiver?.type) && (
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                        {activeTab === 'incoming' ? req.sender?.type : req.receiver?.type}
+                      </p>
+                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
                       <MapPin size={16} /> {activeTab === 'incoming' ? req.sender?.location : req.receiver?.location}
                     </div>
@@ -226,10 +237,21 @@ const TradeRequestsPage = ({ user }) => {
                     </div>
                   ) : (
                     req.status === 'accepted' ? (
-                      <div style={{ textAlign: 'center', color: 'var(--success)', padding: '1rem', background: 'rgba(16,185,129,0.1)', borderRadius: '8px' }}>
-                        <Check size={32} style={{ margin: '0 auto 0.5rem' }} />
-                        <p style={{ fontWeight: 600 }}>Trade Completed</p>
-                        <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>Transaction record created.</p>
+                      <div>
+                        {/* Success badge */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.75rem 1rem', background: 'rgba(16,185,129,0.1)', borderRadius: '8px', marginBottom: '0', border: '1px solid rgba(16,185,129,0.25)' }}>
+                          <Check size={20} style={{ color: 'var(--success)', flexShrink: 0 }} />
+                          <div>
+                            <p style={{ fontWeight: 600, color: 'var(--success)', fontSize: '0.95rem', margin: 0 }}>Trade Accepted</p>
+                            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '2px 0 0' }}>Transaction recorded · Contact details unlocked</p>
+                          </div>
+                        </div>
+                        {/* Contact panel - revealed for both sender & receiver */}
+                        <CoordinationPanel
+                          acceptedAt={req.updatedAt}
+                          role={activeTab === 'incoming' ? 'seller' : 'buyer'}
+                          party={activeTab === 'incoming' ? req.sender : req.receiver}
+                        />
                       </div>
                     ) : req.status === 'rejected' ? (
                       <div style={{ textAlign: 'center', color: 'var(--error)', padding: '1rem' }}>

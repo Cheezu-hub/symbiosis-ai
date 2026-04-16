@@ -104,15 +104,25 @@ router.get('/match-score/:wasteId/:resourceId', authenticateToken, async (req, r
 // ─── GET /api/ai/opportunities (auth required) ─────────────────────────────
 router.get('/opportunities', authenticateToken, async (req, res) => {
   try {
-    const [wasteRes, resourceRes] = await Promise.all([
-      pool.query(`SELECT wl.*, i.company_name as provider_name FROM waste_listings wl JOIN industries i ON wl.industry_id = i.id WHERE wl.status = 'available'`),
-      pool.query(`SELECT rr.*, i.company_name as requester_name FROM resource_requests rr JOIN industries i ON rr.industry_id = i.id WHERE rr.status = 'active'`)
+    const userId = req.user.id;
+    // Fetch user industry type for context-aware recommendations
+    const userRes = await pool.query('SELECT industry_type FROM industries WHERE id = $1', [userId]);
+    const userIndustryType = userRes.rows[0]?.industry_type;
+
+    const [myWaste, otherResources, otherWaste, myResources] = await Promise.all([
+      pool.query(`SELECT wl.*, i.company_name as provider_name FROM waste_listings wl JOIN industries i ON wl.industry_id = i.id WHERE wl.status = 'available' AND wl.industry_id = $1`, [userId]),
+      pool.query(`SELECT rr.*, i.company_name as requester_name FROM resource_requests rr JOIN industries i ON rr.industry_id = i.id WHERE rr.status = 'active' AND rr.industry_id != $1`, [userId]),
+      pool.query(`SELECT wl.*, i.company_name as provider_name FROM waste_listings wl JOIN industries i ON wl.industry_id = i.id WHERE wl.status = 'available' AND wl.industry_id != $1`, [userId]),
+      pool.query(`SELECT rr.*, i.company_name as requester_name FROM resource_requests rr JOIN industries i ON rr.industry_id = i.id WHERE rr.status = 'active' AND rr.industry_id = $1`, [userId])
     ]);
 
     const topN = parseInt(req.query.limit) || 10;
-    const opportunities = recommendationService.detectOpportunities(wasteRes.rows, resourceRes.rows, topN);
+    const opps1 = recommendationService.detectOpportunities(myWaste.rows, otherResources.rows, topN, userIndustryType);
+    const opps2 = recommendationService.detectOpportunities(otherWaste.rows, myResources.rows, topN, userIndustryType);
+    
+    const opportunities = [...opps1, ...opps2].sort((a,b) => b.matchScore - a.matchScore).slice(0, topN);
 
-    res.json({ success: true, data: { opportunities, totalWaste: wasteRes.rows.length, totalResources: resourceRes.rows.length } });
+    res.json({ success: true, data: { opportunities, totalWaste: myWaste.rows.length + otherWaste.rows.length, totalResources: myResources.rows.length + otherResources.rows.length } });
   } catch (err) {
     console.error('AI opportunities error:', err);
     res.status(500).json({ success: false, error: 'Opportunity detection failed' });
@@ -321,9 +331,13 @@ router.get('/personalized-recommendations', authenticateToken, async (req, res) 
     );
     const wasteListings = wasteRes.rows;
 
+    // Fetch user industry type for context-aware recommendations
+    const userRes = await pool.query('SELECT industry_type FROM industries WHERE id = $1', [userId]);
+    const userIndustryType = userRes.rows[0]?.industry_type;
+
     // ── 3. Run the personalised matching engine ───────────────────────────────
     const groups = scoringService.generatePersonalizedRecommendations(
-      userRequests, wasteListings, { topPerRequest, minScore }
+      userRequests, wasteListings, { topPerRequest, minScore, userIndustryType }
     );
 
     // ── 4. Summary stats ─────────────────────────────────────────────────────
