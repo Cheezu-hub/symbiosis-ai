@@ -34,8 +34,8 @@ router.get('/', async (req, res) => {
       `SELECT tr.*,
               wl.material_type, wl.quantity as listing_quantity, wl.unit, wl.location as listing_location,
               wl.price_per_unit, wl.category,
-              sender.company_name   as sender_name,   sender.contact_email   as sender_email,   sender.location as sender_location,
-              receiver.company_name as receiver_name, receiver.contact_email as receiver_email, receiver.location as receiver_location
+              sender.company_name   as sender_name,   sender.contact_email   as sender_email,   sender.contact_phone as sender_phone,   sender.location as sender_location,   sender.industry_type as sender_type,
+              receiver.company_name as receiver_name, receiver.contact_email as receiver_email, receiver.contact_phone as receiver_phone, receiver.location as receiver_location, receiver.industry_type as receiver_type
        FROM trade_requests tr
        JOIN waste_listings wl ON tr.waste_listing_id = wl.id
        JOIN industries sender   ON tr.sender_id   = sender.id
@@ -63,8 +63,8 @@ router.get('/', async (req, res) => {
         status:            r.status,
         aiMatchScore:      r.ai_match_score ? parseFloat(r.ai_match_score) : null,
         direction:         r.sender_id === userId ? 'outgoing' : 'incoming',
-        sender:   { id: r.sender_id,   name: r.sender_name,   email: r.sender_email,   location: r.sender_location },
-        receiver: { id: r.receiver_id, name: r.receiver_name, email: r.receiver_email, location: r.receiver_location },
+        sender:   { id: r.sender_id,   name: r.sender_name,   email: r.sender_email,   phone: r.sender_phone,   type: r.sender_type,   location: r.sender_location },
+        receiver: { id: r.receiver_id, name: r.receiver_name, email: r.receiver_email, phone: r.receiver_phone, type: r.receiver_type, location: r.receiver_location },
         respondedAt: r.responded_at,
         createdAt:   r.created_at,
         updatedAt:   r.updated_at
@@ -85,15 +85,16 @@ router.get('/:id', async (req, res) => {
               wl.material_type, wl.description as listing_description,
               wl.quantity as listing_quantity, wl.unit, wl.location as listing_location,
               wl.price_per_unit, wl.category, wl.status as listing_status,
-              sender.company_name   as sender_name,   sender.contact_email as sender_email,
+              sender.company_name   as sender_name,   sender.contact_email as sender_email,   sender.contact_phone as sender_phone,
               sender.industry_type  as sender_type,   sender.location      as sender_location,
-              receiver.company_name as receiver_name, receiver.contact_email as receiver_email,
+              receiver.company_name as receiver_name, receiver.contact_email as receiver_email, receiver.contact_phone as receiver_phone,
               receiver.industry_type as receiver_type, receiver.location   as receiver_location
        FROM trade_requests tr
        JOIN waste_listings wl ON tr.waste_listing_id = wl.id
        JOIN industries sender   ON tr.sender_id   = sender.id
        JOIN industries receiver ON tr.receiver_id = receiver.id
        WHERE tr.id = $1 AND (tr.sender_id = $2 OR tr.receiver_id = $2)`,
+
       [req.params.id, userId]
     );
 
@@ -119,8 +120,8 @@ router.get('/:id', async (req, res) => {
         status:            r.status,
         aiMatchScore:      r.ai_match_score ? parseFloat(r.ai_match_score) : null,
         direction:         r.sender_id === userId ? 'outgoing' : 'incoming',
-        sender:   { id: r.sender_id,   name: r.sender_name,   email: r.sender_email,   type: r.sender_type,   location: r.sender_location },
-        receiver: { id: r.receiver_id, name: r.receiver_name, email: r.receiver_email, type: r.receiver_type, location: r.receiver_location },
+        sender:   { id: r.sender_id,   name: r.sender_name,   email: r.sender_email,   phone: r.sender_phone,   type: r.sender_type,   location: r.sender_location },
+        receiver: { id: r.receiver_id, name: r.receiver_name, email: r.receiver_email, phone: r.receiver_phone, type: r.receiver_type, location: r.receiver_location },
         respondedAt: r.responded_at,
         createdAt:   r.created_at
       }

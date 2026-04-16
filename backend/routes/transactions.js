@@ -26,8 +26,8 @@ router.get('/', async (req, res) => {
     const query = `
       SELECT t.*,
              wl.material_type, wl.unit, wl.category,
-             seller.company_name as seller_name, seller.industry_type as seller_type,
-             buyer.company_name as buyer_name, buyer.industry_type as buyer_type
+             seller.company_name as seller_name, seller.industry_type as seller_type, seller.contact_phone as seller_phone, seller.contact_email as seller_email,
+             buyer.company_name as buyer_name, buyer.industry_type as buyer_type, buyer.contact_phone as buyer_phone, buyer.contact_email as buyer_email
       FROM transactions t
       JOIN waste_listings wl ON t.waste_listing_id = wl.id
       JOIN industries seller ON t.seller_id = seller.id
@@ -52,8 +52,8 @@ router.get('/', async (req, res) => {
         unit:            r.unit,
         totalValue:      parseFloat(r.total_value),
         role:            r.buyer_id === userId ? 'buyer' : 'seller',
-        seller: { id: r.seller_id, name: r.seller_name, type: r.seller_type },
-        buyer:  { id: r.buyer_id,  name: r.buyer_name,  type: r.buyer_type },
+        seller: { id: r.seller_id, name: r.seller_name, type: r.seller_type, phone: r.seller_phone, email: r.seller_email },
+        buyer:  { id: r.buyer_id,  name: r.buyer_name,  type: r.buyer_type, phone: r.buyer_phone, email: r.buyer_email },
         impact: {
           co2ReductionTons:  parseFloat(r.co2_reduction_tons),
           wasteDivertedTons: parseFloat(r.waste_diverted_tons),
@@ -135,8 +135,8 @@ router.get('/:id', async (req, res) => {
     const result = await pool.query(
       `SELECT t.*,
               wl.material_type, wl.unit, wl.category, wl.description as listing_description,
-              seller.company_name as seller_name, seller.contact_email as seller_email, seller.location as seller_location,
-              buyer.company_name  as buyer_name,  buyer.contact_email as buyer_email, buyer.location as buyer_location
+              seller.company_name as seller_name, seller.contact_email as seller_email, seller.contact_phone as seller_phone, seller.location as seller_location,
+              buyer.company_name  as buyer_name,  buyer.contact_email as buyer_email, buyer.contact_phone as buyer_phone, buyer.location as buyer_location
        FROM transactions t
        JOIN waste_listings wl ON t.waste_listing_id = wl.id
        JOIN industries seller ON t.seller_id = seller.id
@@ -162,8 +162,8 @@ router.get('/:id', async (req, res) => {
         unit:            r.unit,
         totalValue:      parseFloat(r.total_value),
         role:            r.buyer_id === userId ? 'buyer' : 'seller',
-        seller: { id: r.seller_id, name: r.seller_name, email: r.seller_email, location: r.seller_location },
-        buyer:  { id: r.buyer_id,  name: r.buyer_name,  email: r.buyer_email,  location: r.buyer_location },
+        seller: { id: r.seller_id, name: r.seller_name, email: r.seller_email, phone: r.seller_phone, location: r.seller_location },
+        buyer:  { id: r.buyer_id,  name: r.buyer_name,  email: r.buyer_email, phone: r.buyer_phone, location: r.buyer_location },
         impact: {
           co2ReductionTons:  parseFloat(r.co2_reduction_tons),
           wasteDivertedTons: parseFloat(r.waste_diverted_tons),

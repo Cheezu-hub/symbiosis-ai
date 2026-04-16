@@ -5,7 +5,7 @@
 
 const {
   WASTE_REUSE_MAP, MATERIAL_ALIASES, MATERIAL_SIMILARITIES,
-  IMPACT_COEFFICIENTS, DEFAULT_IMPACT, CITY_DISTANCES
+  IMPACT_COEFFICIENTS, DEFAULT_IMPACT, CITY_DISTANCES, INDUSTRY_ACCEPTS
 } = require('./aiKnowledgeBase');
 
 // ─── String Utilities ────────────────────────────────────────────────────────
@@ -208,13 +208,31 @@ function findSmartMatches(wasteMaterial, wasteQty, wasteLoc, resourceRequests) {
 
 // ─── 5. Opportunity Detection ───────────────────────────────────────────────
 
-function detectOpportunities(wasteListings, resourceRequests, topN = 10) {
+function detectOpportunities(wasteListings, resourceRequests, topN = 10, userIndustryType = null) {
   const opps = [];
+  const normalizedUserIndustry = userIndustryType ? userIndustryType.toLowerCase().replace(/\s+industry$/i, '') : null;
+
   for (const w of wasteListings) {
     if (w.status !== 'available') continue;
     for (const r of resourceRequests) {
       if (r.status !== 'active') continue;
+      
       const wm = w.material_type || w.materialType, rm = r.material_needed || r.materialNeeded;
+      
+      // Strict Industry Filtering if userIndustryType is provided
+      if (normalizedUserIndustry) {
+        const acceptedMaterials = INDUSTRY_ACCEPTS[normalizedUserIndustry] || [];
+        const resolvedWM = resolveMaterial(wm);
+        const resolvedRM = resolveMaterial(rm);
+        
+        const isMatchForUser = acceptedMaterials.some(m => 
+          (resolvedWM.canonicalName && m === resolvedWM.canonicalName) || 
+          (resolvedRM.canonicalName && m === resolvedRM.canonicalName)
+        );
+
+        if (!isMatchForUser) continue;
+      }
+
       const sim = computeMaterialSimilarity(wm, rm);
       if (sim < 0.25) continue;
       const score = computeSymbiosisScore(
@@ -321,15 +339,28 @@ function computeMaterialMatchScore(wasteMaterial, wasteCategory, seekerMaterial,
 
   // 3. Reusability check via knowledge base
   const resolved = resolveMaterial(wasteMaterial);
-  if (resolved.canonicalName && seekerIndustrySector) {
+  if (resolved.canonicalName) {
+    // Check against INDUSTRY_ACCEPTS if seekerIndustrySector is provided
+    if (seekerIndustrySector) {
+      const normalizedSector = seekerIndustrySector.toLowerCase().replace(/\s+industry$/i, '');
+      const accepted = INDUSTRY_ACCEPTS[normalizedSector] || [];
+      if (accepted.includes(resolved.canonicalName)) {
+        score = Math.min(100, score + 20); // Significant bonus for industry-aligned material
+      } else {
+        score = Math.max(0, score - 30); // Penalty for non-industry-aligned material
+      }
+    }
+
     const recs = WASTE_REUSE_MAP[resolved.canonicalName] || [];
-    const sector = normalizeMaterial(seekerIndustrySector);
-    const sectorMatch = recs.find(r => {
-      const ri = normalizeMaterial(r.industry);
-      return ri.includes(sector) || sector.includes(ri) || jaccardSimilarity(ri, sector) > 0.4;
-    });
-    if (sectorMatch) {
-      score = Math.min(100, Math.round(score * 0.7 + sectorMatch.suitability * 0.3));
+    const sector = seekerIndustrySector ? normalizeMaterial(seekerIndustrySector) : '';
+    if (sector) {
+      const sectorMatch = recs.find(r => {
+        const ri = normalizeMaterial(r.industry);
+        return ri.includes(sector) || sector.includes(ri) || jaccardSimilarity(ri, sector) > 0.4;
+      });
+      if (sectorMatch) {
+         score = Math.min(100, Math.round(score * 0.7 + sectorMatch.suitability * 0.3));
+      }
     }
   }
 
@@ -426,6 +457,8 @@ function computeTradeScore(waste, seeker) {
 function generateTradeRecommendations(company, wasteListings, resourceReqs, opts = {}) {
   const { role = 'both', topN = 20 } = opts;
   const recommendations = [];
+  const normalizedIndustry = company.industry_type ? company.industry_type.toLowerCase().replace(/\s+industry$/i, '') : null;
+  const acceptedMaterials = normalizedIndustry ? (INDUSTRY_ACCEPTS[normalizedIndustry] || []) : [];
 
   // ─── As Buyer: find waste that matches company's resource requests ─────────
   if (role === 'buyer' || role === 'both') {
@@ -434,6 +467,13 @@ function generateTradeRecommendations(company, wasteListings, resourceReqs, opts
 
     for (const req of myRequests) {
       for (const waste of otherWaste) {
+        // Industry Filtering
+        const wm = waste.material_type || waste.materialType;
+        const resolvedWM = resolveMaterial(wm);
+        if (normalizedIndustry && resolvedWM.canonicalName && !acceptedMaterials.includes(resolvedWM.canonicalName)) {
+            continue; // Strict filter
+        }
+
         const tradeScore = computeTradeScore(waste, req);
         if (tradeScore.compositeScore < 25) continue; // skip low-quality matches
 
@@ -441,7 +481,7 @@ function generateTradeRecommendations(company, wasteListings, resourceReqs, opts
           direction: 'buy',
           wasteListingId: waste.id,
           resourceRequestId: req.id,
-          wasteMaterial: waste.material_type || waste.materialType,
+          wasteMaterial: wm,
           resourceNeeded: req.material_needed || req.materialNeeded,
           wasteProvider: waste.provider_name || waste.company_name || `Company #${waste.industry_id}`,
           wasteProviderType: waste.industry_type || waste.industryType,
@@ -455,7 +495,7 @@ function generateTradeRecommendations(company, wasteListings, resourceReqs, opts
           compositeScore: tradeScore.compositeScore,
           grade: tradeScore.grade,
           breakdown: tradeScore.breakdown,
-          impact: estimateEnvironmentalImpact(waste.material_type || waste.materialType, Math.min(parseFloat(waste.quantity), parseFloat(req.quantity)) || 0),
+          impact: estimateEnvironmentalImpact(wm, Math.min(parseFloat(waste.quantity), parseFloat(req.quantity)) || 0),
           reason: buildRecommendationReason(tradeScore, 'buy')
         });
       }
@@ -472,6 +512,16 @@ function generateTradeRecommendations(company, wasteListings, resourceReqs, opts
         // Avoid duplicate if already matched in buyer direction
         if (recommendations.find(r => r.wasteListingId === waste.id && r.resourceRequestId === req.id)) continue;
 
+        // Industry Filtering for Seeker
+        const seekerIndustry = req.industry_type ? req.industry_type.toLowerCase().replace(/\s+industry$/i, '') : null;
+        const seekerAccepted = seekerIndustry ? (INDUSTRY_ACCEPTS[seekerIndustry] || []) : [];
+        const wm = waste.material_type || waste.materialType;
+        const resolvedWM = resolveMaterial(wm);
+        
+        if (seekerIndustry && resolvedWM.canonicalName && !seekerAccepted.includes(resolvedWM.canonicalName)) {
+            continue; // Strict filter
+        }
+
         const tradeScore = computeTradeScore(waste, req);
         if (tradeScore.compositeScore < 25) continue;
 
@@ -479,7 +529,7 @@ function generateTradeRecommendations(company, wasteListings, resourceReqs, opts
           direction: 'sell',
           wasteListingId: waste.id,
           resourceRequestId: req.id,
-          wasteMaterial: waste.material_type || waste.materialType,
+          wasteMaterial: wm,
           resourceNeeded: req.material_needed || req.materialNeeded,
           resourceSeeker: req.requester_name || req.company_name || `Company #${req.industry_id}`,
           resourceSeekerType: req.industry_type || req.industryType,
@@ -493,7 +543,7 @@ function generateTradeRecommendations(company, wasteListings, resourceReqs, opts
           compositeScore: tradeScore.compositeScore,
           grade: tradeScore.grade,
           breakdown: tradeScore.breakdown,
-          impact: estimateEnvironmentalImpact(waste.material_type || waste.materialType, Math.min(parseFloat(waste.quantity), parseFloat(req.quantity)) || 0),
+          impact: estimateEnvironmentalImpact(wm, Math.min(parseFloat(waste.quantity), parseFloat(req.quantity)) || 0),
           reason: buildRecommendationReason(tradeScore, 'sell')
         });
       }
@@ -557,20 +607,31 @@ function buildRecommendationReason(tradeScore, direction) {
  * @returns {Array} Grouped recommendation objects, one entry per user request
  */
 function generatePersonalizedRecommendations(userRequests, wasteListings, opts = {}) {
-  const { topPerRequest = 5, minScore = 25 } = opts;
-
+  const { topPerRequest = 5, minScore = 25, userIndustryType = null } = opts;
   const grouped = [];
+  const normalizedIndustry = userIndustryType ? userIndustryType.toLowerCase().replace(/\s+industry$/i, '') : null;
+  const acceptedMaterials = normalizedIndustry ? (INDUSTRY_ACCEPTS[normalizedIndustry] || []) : [];
 
   for (const req of userRequests) {
     const matches = [];
 
     for (const waste of wasteListings) {
+      const wm = waste.material_type || waste.materialType;
+      
+      // Strict Industry Filtering
+      if (normalizedIndustry) {
+          const resolvedWM = resolveMaterial(wm);
+          if (resolvedWM.canonicalName && !acceptedMaterials.includes(resolvedWM.canonicalName)) {
+              continue;
+          }
+      }
+
       const tradeScore = computeTradeScore(waste, req);
       if (tradeScore.compositeScore < minScore) continue;
 
       matches.push({
         wasteListingId:    waste.id,
-        wasteMaterial:     waste.material_type || waste.materialType,
+        wasteMaterial:     wm,
         wasteProvider:     waste.provider_name || waste.company_name || `Company #${waste.industry_id}`,
         wasteProviderType: waste.industry_type  || waste.industryType,
         wasteLocation:     waste.location,
@@ -582,7 +643,7 @@ function generatePersonalizedRecommendations(userRequests, wasteListings, opts =
         breakdown:         tradeScore.breakdown,
         reason:            buildRecommendationReason(tradeScore, 'buy'),
         impact:            estimateEnvironmentalImpact(
-          waste.material_type || waste.materialType,
+          wm,
           Math.min(parseFloat(waste.quantity) || 0, parseFloat(req.quantity) || 0)
         )
       });

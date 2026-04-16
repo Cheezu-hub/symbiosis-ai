@@ -5,6 +5,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import SymbiosisScoreBadge from '../components/ai/SymbiosisScoreBadge';
+import CoordinationPanel from '../components/ui/CoordinationPanel';
 
 const MatchesPage = ({ user }) => {
   const [matches, setMatches] = useState([]);
@@ -547,6 +548,18 @@ return (
                   >
                     Rejected
                   </Badge>
+                )}
+                {match.status === 'accepted' && match.contactInfo && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <CoordinationPanel 
+                      acceptedAt={match.acceptedAt}
+                      role={match.wasteProvider === user?.companyName ? 'seller' : 'buyer'}
+                      party={match.wasteProvider === user?.companyName 
+                        ? match.contactInfo.resourceSeeker 
+                        : match.contactInfo.wasteProvider
+                      }
+                    />
+                  </div>
                 )}
               </div>
             </div>

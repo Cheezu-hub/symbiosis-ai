@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, AlertCircle, Zap, Loader, Briefcase } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, AlertCircle, Zap, Loader, Briefcase, Star } from 'lucide-react';
 import { wasteAPI, aiAPI, tradeAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -409,32 +409,64 @@ return (
               </div>
 
               {/* AI Ideas Panel */}
-              {aiSuggestions[listing.id] && (
-                <div style={{
-                  padding: '1rem',
-                  background: 'rgba(88, 224, 119, 0.05)',
-                  border: '1px solid rgba(88, 224, 119, 0.3)',
-                  borderRadius: 'var(--radius, 8px)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                    <Zap size={16} style={{ color: 'var(--primary, #58e077)' }} />
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary, #e2e2e5)', fontSize: '0.9rem' }}>
-                      Recommended Uses
-                    </span>
-                  </div>
-                  {aiSuggestions[listing.id].recommendations?.length > 0 ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      {aiSuggestions[listing.id].recommendations.slice(0, 4).map((rec, i) => (
-                        <Badge key={i} style={{ background: 'var(--bg-secondary, #1a1c1e)', border: '1px solid var(--border, #37393b)', color: 'var(--text-secondary, #a0a0a5)' }}>
-                          {rec.industry} ({rec.application})
-                        </Badge>
-                      ))}
+              {aiSuggestions[listing.id] && (() => {
+                const allRecs = aiSuggestions[listing.id].recommendations || [];
+                const userIndustry = (user?.industry_type || user?.industryType || '').toLowerCase();
+                
+                // Sort: user's industry match first
+                const sorted = [...allRecs].sort((a, b) => {
+                  const aMatch = userIndustry && a.industry?.toLowerCase().includes(userIndustry);
+                  const bMatch = userIndustry && b.industry?.toLowerCase().includes(userIndustry);
+                  if (aMatch && !bMatch) return -1;
+                  if (!aMatch && bMatch) return 1;
+                  return 0;
+                });
+
+                return (
+                  <div style={{
+                    padding: '1rem',
+                    background: 'rgba(88, 224, 119, 0.05)',
+                    border: '1px solid rgba(88, 224, 119, 0.3)',
+                    borderRadius: 'var(--radius, 8px)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <Zap size={16} style={{ color: 'var(--primary, #58e077)' }} />
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary, #e2e2e5)', fontSize: '0.9rem' }}>
+                        Recommended Uses
+                      </span>
+                      {userIndustry && (
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                          <Star size={10} style={{ display: 'inline', marginRight: '2px', color: 'var(--primary)' }} />
+                          = your industry
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}>No standard uses found.</span>
-                  )}
-                </div>
-              )}
+                    {sorted.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {sorted.slice(0, 5).map((rec, i) => {
+                          const isMyIndustry = userIndustry && rec.industry?.toLowerCase().includes(userIndustry);
+                          return (
+                            <Badge
+                              key={i}
+                              style={{
+                                background: isMyIndustry ? 'rgba(88,224,119,0.15)' : 'var(--bg-secondary, #1a1c1e)',
+                                border: `1px solid ${isMyIndustry ? 'rgba(88,224,119,0.5)' : 'var(--border, #37393b)'}`,
+                                color: isMyIndustry ? 'var(--primary)' : 'var(--text-secondary, #a0a0a5)',
+                                fontWeight: isMyIndustry ? 600 : 400,
+                              }}
+                            >
+                              {isMyIndustry && <Star size={10} style={{ display: 'inline', marginRight: '3px' }} />}
+                              {rec.industry} ({rec.application})
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary, #a0a0a5)' }}>No standard uses found.</span>
+                    )}
+                  </div>
+                );
+              })()}
             </Card>
           ))}
         </div>
