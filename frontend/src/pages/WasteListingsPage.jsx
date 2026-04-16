@@ -4,6 +4,7 @@ import { wasteAPI, aiAPI, tradeAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import Skeleton from '../components/ui/Skeleton';
 
 const emptyForm = {
   materialType: '',
@@ -16,7 +17,6 @@ const emptyForm = {
   category: ''
 };
 
-import Skeleton from '../components/ui/Skeleton';
 
 const WasteListingsSkeleton = () => (
   <div className="page-container">
@@ -58,6 +58,7 @@ const WasteListingsSkeleton = () => (
 
 const WasteListingsPage = ({ user }) => {
   const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);

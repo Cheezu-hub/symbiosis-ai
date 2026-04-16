@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { transactionAPI } from '../services/api';
 import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
 import { DollarSign, RefreshCw, ArrowUpRight, ArrowDownRight, Leaf, Droplet, Phone, Mail, ExternalLink } from 'lucide-react';
 
 // ─── Inline contact chip ─────────────────────────────────────────────────────
