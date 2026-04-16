@@ -59,6 +59,7 @@ const ImpactPage = ({ user }) => {
   const [score, setScore] = useState({});
   const [period, setPeriod] = useState('monthly');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
     setError('');

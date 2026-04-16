@@ -4,6 +4,7 @@ import { wasteAPI, aiAPI, tradeAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import Skeleton from '../components/ui/Skeleton';
 
 const emptyForm = {
   materialType: '',
@@ -16,7 +17,7 @@ const emptyForm = {
   category: ''
 };
 
-import Skeleton from '../components/ui/Skeleton';
+
 
 const WasteListingsSkeleton = () => (
   <div className="page-container">
@@ -69,6 +70,7 @@ const WasteListingsPage = ({ user }) => {
   const [tradeModal, setTradeModal] = useState({ show: false, listing: null });
   const [tradeForm, setTradeForm] = useState({ quantity: '', price: '', message: '' });
   const [sendingTrade, setSendingTrade] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchAiSuggestions = async (wasteId, materialType) => {
     setLoadingAi(p => ({ ...p, [wasteId]: true }));
