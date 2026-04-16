@@ -18,6 +18,7 @@ const emptyForm = {
 };
 
 
+
 const WasteListingsSkeleton = () => (
   <div className="page-container">
     <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -70,6 +71,7 @@ const WasteListingsPage = ({ user }) => {
   const [tradeModal, setTradeModal] = useState({ show: false, listing: null });
   const [tradeForm, setTradeForm] = useState({ quantity: '', price: '', message: '' });
   const [sendingTrade, setSendingTrade] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchAiSuggestions = async (wasteId, materialType) => {
     setLoadingAi(p => ({ ...p, [wasteId]: true }));
