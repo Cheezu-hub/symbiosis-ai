@@ -45,7 +45,22 @@ const Sidebar = ({
         alignItems: 'center',
         gap: '0.75rem'
       }}>
-        <Recycle size={28} color="var(--primary, #58e077)" />
+        <div style={{
+          width: '32px',
+          height: '32px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          borderRadius: '8px',
+          background: 'rgba(255, 255, 255, 0.05)'
+        }}>
+          <img 
+            src="/logo.png" 
+            alt="SymbioTech Logo" 
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+          />
+        </div>
         {!collapsed && (
           <span style={{
             fontSize: '1.25rem',
