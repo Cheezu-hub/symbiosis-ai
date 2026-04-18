@@ -71,7 +71,6 @@ const WasteListingsPage = ({ user }) => {
   const [tradeModal, setTradeModal] = useState({ show: false, listing: null });
   const [tradeForm, setTradeForm] = useState({ quantity: '', price: '', message: '' });
   const [sendingTrade, setSendingTrade] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const fetchAiSuggestions = async (wasteId, materialType) => {
     setLoadingAi(p => ({ ...p, [wasteId]: true }));
