@@ -12,7 +12,7 @@ import Badge from './Badge';
 const CoordinationPanel = ({ party, role, acceptedAt }) => {
   if (!party) return null;
 
-  const { name, email, phone, location } = party;
+  const { name, email, phone } = party;
 
   // Formatting WhatsApp link: Remove non-numeric characters, add +91 if not present
   const formatWhatsApp = (num) => {

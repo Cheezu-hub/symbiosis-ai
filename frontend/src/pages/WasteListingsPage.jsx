@@ -59,6 +59,7 @@ const WasteListingsSkeleton = () => (
 
 const WasteListingsPage = ({ user }) => {
   const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);

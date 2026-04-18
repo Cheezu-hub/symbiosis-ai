@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   ArrowRightLeft, Check, X, RefreshCw, Briefcase, MapPin, Package,
-  Clock, Phone, Mail, ExternalLink, Building2, Handshake
+  Clock
 } from 'lucide-react';
 import { tradeAPI } from '../services/api';
 import Card from '../components/ui/Card';

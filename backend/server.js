@@ -31,10 +31,16 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Trust proxy is required if you are behind a load balancer (Vercel, Heroku, etc.)
+app.set('trust proxy', 1);
+
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  message: { error: 'Too many requests, please try again later' }
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: process.env.NODE_ENV === 'development' ? 1000 : 200, // Relaxed limit for development
+  standardHeaders: 'draft-7', // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { error: 'Too many requests, please try again later' },
+  skip: (req) => process.env.NODE_ENV === 'development' && req.ip === '127.0.0.1', // Optional: Skip localhost
 });
 app.use('/api/', limiter);
 
