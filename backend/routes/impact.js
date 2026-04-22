@@ -134,4 +134,37 @@ router.get('/sustainability-score', async (req, res) => {
   }
 });
 
+// ── GET /api/impact  (global stats — no auth required) ──────────────────────
+// Used by the public dashboard to display platform-wide numbers.
+router.get('/', async (req, res) => {
+  try {
+    const [companies, matches, co2, waste] = await Promise.all([
+      pool.query('SELECT COUNT(*) as total FROM industries'),
+      pool.query(`SELECT COUNT(*) as total,
+                         COUNT(*) FILTER (WHERE status='accepted') as accepted
+                  FROM matches`),
+      pool.query(`SELECT COALESCE(SUM(co2_reduction_tons),0) as total
+                  FROM matches WHERE status='accepted'`),
+      pool.query(`SELECT COALESCE(SUM(wl.quantity),0) as total
+                  FROM matches m
+                  JOIN waste_listings wl ON m.waste_listing_id = wl.id
+                  WHERE m.status='accepted'`)
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalCompanies:      parseInt(companies.rows[0].total),
+        totalMatches:        parseInt(matches.rows[0].total),
+        acceptedMatches:     parseInt(matches.rows[0].accepted),
+        carbonReductionTons: parseFloat(co2.rows[0].total)   || 0,
+        wasteDivertedTons:   parseFloat(waste.rows[0].total) || 0
+      }
+    });
+  } catch (err) {
+    console.error('[impact/]', err);
+    res.status(500).json({ error: 'Failed to fetch impact stats' });
+  }
+});
+
 module.exports = router;

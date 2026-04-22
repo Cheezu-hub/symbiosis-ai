@@ -288,4 +288,58 @@ router.post('/:id/reject', async (req, res) => {
     }
 });
 
+// ── POST /api/matches/generate ──────────────────────────────────────────────
+// Triggers AI matching pass. Auth required (any logged-in user can trigger).
+router.post('/generate', async (req, res) => {
+    try {
+        const { runMatching } = require('../utils/matchingRunner');
+        const result = await runMatching();
+        res.json({
+            success: true,
+            message: 'Matching completed',
+            data: {
+                inserted: result.inserted,
+                updated:  result.updated,
+                skipped:  result.skipped
+            }
+        });
+    } catch (err) {
+        console.error('[matches/generate]', err);
+        res.status(500).json({ success: false, error: 'Matching failed' });
+    }
+});
+
+// ── GET /api/matches/stats ───────────────────────────────────────────────────
+// Global platform stats: companies, matches, savings, carbon. No auth required.
+router.get('/stats', async (req, res) => {
+    try {
+        const [companiesRes, matchesRes, impactRes] = await Promise.all([
+            pool.query('SELECT COUNT(*) as total FROM industries'),
+            pool.query(`SELECT COUNT(*) as total,
+                               COUNT(*) FILTER (WHERE status='accepted') as accepted,
+                               COUNT(*) FILTER (WHERE status='pending')  as pending
+                        FROM matches`),
+            pool.query(`SELECT COALESCE(SUM(cost_savings), 0)       as total_savings,
+                               COALESCE(SUM(co2_reduction_tons), 0)  as total_co2
+                        FROM matches WHERE status = 'accepted'`)
+        ]);
+
+        const imp = impactRes.rows[0];
+        res.json({
+            success: true,
+            data: {
+                totalCompanies:  parseInt(companiesRes.rows[0].total),
+                totalMatches:    parseInt(matchesRes.rows[0].total),
+                acceptedMatches: parseInt(matchesRes.rows[0].accepted),
+                pendingMatches:  parseInt(matchesRes.rows[0].pending),
+                estimatedSavingsINR: parseFloat(imp.total_savings) || 0,
+                carbonReductionTons: parseFloat(imp.total_co2)    || 0
+            }
+        });
+    } catch (err) {
+        console.error('[matches/stats]', err);
+        res.status(500).json({ success: false, error: 'Failed to fetch stats' });
+    }
+});
+
 module.exports = router;
