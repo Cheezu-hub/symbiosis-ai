@@ -67,7 +67,13 @@ ism_pg/
 
 ---
 
-## 🚀 Quick Start (Local Setup)
+## Key Features
+
+- **Industrial Symbiosis Matching**: AI-driven engine that connects waste outputs from one industry to the resource needs of another.
+- **Dynamic Network Visualization**: Interactive force-directed graph showing real-time resource exchange relationships.
+- **Impact Analytics**: Real-time tracking of CO2 reduction and waste diversion metrics.
+
+## Getting Started (Local Setup)
 
 ### 1. Prerequisites
 *   Node.js (v18+)
