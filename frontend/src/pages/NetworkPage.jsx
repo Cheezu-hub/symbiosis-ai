@@ -76,6 +76,8 @@ const NetworkGraph = ({ nodes, links, setTooltip }) => {
         onNodeHover={(node) => setTooltip(node || null)}
         
         // Premium Canvas Rendering
+        // Using nodeCanvasObject for high-performance rendering on the canvas
+        // instead of heavy DOM-based SVG nodes.
         nodeCanvasObject={(node, ctx, globalScale) => {
           const label = node.label || 'Industry Node';
           const fontSize = Math.max(12 / globalScale, 4);
