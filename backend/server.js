@@ -10,7 +10,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Security: Helmet helps secure the app by setting various HTTP headers
 app.use(helmet());
+
+// CORS: Define allowed origins for frontend communication
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'https://symbiosis-ai.vercel.app',
