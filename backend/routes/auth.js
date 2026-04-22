@@ -1,4 +1,6 @@
 const express = require('express');
+// TODO: Implement express-rate-limit to protect login and registration routes
+// from brute-force attacks.
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
