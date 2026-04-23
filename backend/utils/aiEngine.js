@@ -130,6 +130,14 @@ function estimateDistance(loc1, loc2) {
 
 // ─── 3. Symbiosis Score ─────────────────────────────────────────────────────
 
+/**
+ * Computes a composite symbiosis score between a waste listing and a resource request.
+ * Weights: Material (40%), Quantity (25%), Location (20%), Reusability (15%)
+ * 
+ * @param {Object} waste - The waste listing object
+ * @param {Object} resource - The resource request object
+ * @returns {Object} Total score and detailed breakdown
+ */
 function computeSymbiosisScore(waste, resource) {
   const W = { material: 0.40, quantity: 0.25, location: 0.20, reusability: 0.15 };
 

@@ -251,7 +251,7 @@ const Sidebar = ({
         flexDirection: 'column',
         transition: 'width 0.3s ease',
         zIndex: 1000,
-        overflow: 'hidden'
+        overflow: 'visible'
       }}
     >
       {sidebarContent}
