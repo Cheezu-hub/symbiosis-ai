@@ -49,7 +49,8 @@ const MatchesPage = ({ user }) => {
     setActionId(matchId);
     try {
       await matchAPI.accept(matchId);
-      setMatches(prev => prev.map(m => m.id === matchId ? { ...m, status: 'accepted' } : m));
+      // Remove from AI Matches list — it will now appear in Trade Requests
+      setMatches(prev => prev.filter(m => m.id !== matchId));
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to accept match.');
     } finally {
@@ -62,7 +63,8 @@ const MatchesPage = ({ user }) => {
     setActionId(matchId);
     try {
       await matchAPI.reject(matchId);
-      setMatches(prev => prev.map(m => m.id === matchId ? { ...m, status: 'rejected' } : m));
+      // Remove the rejected match from the list entirely so it never re-appears
+      setMatches(prev => prev.filter(m => m.id !== matchId));
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to reject match.');
     } finally {
