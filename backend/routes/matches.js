@@ -36,8 +36,12 @@ router.get('/', async (req, res) => {
         let c = 2;
 
         if (status) {
+            // Specific status requested
             query += ` AND m.status = $${c++}`;
             params.push(status);
+        } else {
+            // By default, only show pending matches
+            query += ` AND m.status = 'pending'`;
         }
 
         query += ` ORDER BY m.match_score DESC, m.created_at DESC LIMIT $${c++} OFFSET $${c}`;
@@ -57,6 +61,8 @@ router.get('/', async (req, res) => {
         if (status) {
             countQuery += ` AND m.status = $2`;
             countParams.push(status);
+        } else {
+            countQuery += ` AND m.status = 'pending'`;
         }
 
         const count = await pool.query(countQuery, countParams);
@@ -214,7 +220,7 @@ router.post('/:id/accept', async (req, res) => {
 
         const check = await client.query(
             `SELECT m.*, wl.industry_id as waste_owner, rr.industry_id as resource_owner, 
-                    wl.quantity as waste_quantity, wl.id as wl_id, rr.id as rr_id
+                    wl.quantity as waste_quantity, wl.id as wl_id, rr.id as rr_id, m.match_score
              FROM matches m 
              JOIN waste_listings wl ON m.waste_listing_id=wl.id 
              JOIN resource_requests rr ON m.resource_request_id=rr.id 
@@ -236,6 +242,28 @@ router.post('/:id/accept', async (req, res) => {
         await client.query(`UPDATE matches SET status='accepted', accepted_at=CURRENT_TIMESTAMP WHERE id=$1`, [id]);
         await client.query(`UPDATE waste_listings SET status='reserved' WHERE id=$1`, [match.wl_id]);
         await client.query(`UPDATE resource_requests SET status='fulfilled' WHERE id=$1`, [match.rr_id]);
+
+        // Also create a trade_request record so it appears in the Trade Requests page
+        // Check if a trade_request already exists for this match to avoid duplicates
+        const existingTR = await client.query(
+            `SELECT id FROM trade_requests WHERE waste_listing_id = $1 AND sender_id = $2 AND receiver_id = $3`,
+            [match.wl_id, match.resource_owner, match.waste_owner]
+        );
+        if (existingTR.rows.length === 0) {
+            await client.query(
+                `INSERT INTO trade_requests 
+                    (waste_listing_id, sender_id, receiver_id, quantity_requested, message, ai_match_score, status, responded_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, 'accepted', CURRENT_TIMESTAMP)`,
+                [
+                    match.wl_id,
+                    match.resource_owner,    // buyer (resource seeker) is the sender
+                    match.waste_owner,       // seller (waste provider) is the receiver
+                    match.waste_quantity,
+                    'Accepted via AI Match Recommendation',
+                    check.rows[0].match_score || null
+                ]
+            );
+        }
 
         await client.query('COMMIT');
 
