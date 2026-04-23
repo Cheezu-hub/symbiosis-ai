@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Globe, Users, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import { industryAPI } from '../services/api';
 import Card from '../components/ui/Card';
-
-
 import ForceGraph2D from 'react-force-graph-2d';
+import * as d3 from 'd3-force';
 
 const NODE_COLORS = {
   steel: '#1F7A8C',
@@ -21,6 +20,7 @@ const NetworkGraph = ({ nodes, links, setTooltip }) => {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const containerRef = React.useRef(null);
   const fgRef = React.useRef(null);
+  const layoutDone = React.useRef(false);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -41,15 +41,18 @@ const NetworkGraph = ({ nodes, links, setTooltip }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Center the graph on load
+  // Reset layout flag when nodes change so forces re-apply
   useEffect(() => {
-    if (fgRef.current) {
-      // Small timeout to allow nodes to position
-      setTimeout(() => {
-        fgRef.current.zoomToFit(400, 50);
-      }, 500);
-    }
+    layoutDone.current = false;
   }, [nodes]);
+
+  const handleEngineStop = () => {
+    if (fgRef.current) {
+      fgRef.current.zoomToFit(400, 60);
+    }
+  };
+
+  const NODE_RADIUS = 8;
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden' }}>
@@ -59,62 +62,82 @@ const NetworkGraph = ({ nodes, links, setTooltip }) => {
         height={dimensions.height}
         graphData={{ nodes, links }}
         nodeId="id"
-        // Sleek Link Styling
-        linkColor={() => 'rgba(64, 196, 255, 0.25)'}
-        linkWidth={1.5}
-        linkCurvature={0.25}
-        // Animated Flow Particles
-        linkDirectionalParticles={3}
-        linkDirectionalParticleWidth={3}
-        linkDirectionalParticleSpeed={0.005}
-        linkDirectionalParticleColor={() => '#00daf3'}
-        
-        nodeRelSize={6}
-        d3VelocityDecay={0.4}
-        d3AlphaDecay={0.02}
+        // Link Styling
+        linkColor={() => 'rgba(64, 196, 255, 0.75)'}
+        linkWidth={2}
+        linkCurvature={0.2}
+        // Let simulation run fully then freeze
+        d3VelocityDecay={0.3}
+        d3AlphaDecay={0.015}
+        cooldownTime={4000}
+        onEngineStop={handleEngineStop}
+        enableNodeDrag={false}
+        nodeRelSize={NODE_RADIUS}
         backgroundColor="transparent"
         onNodeHover={(node) => setTooltip(node || null)}
-        
-        // Premium Canvas Rendering
-        // Using nodeCanvasObject for high-performance rendering on the canvas
-        // instead of heavy DOM-based SVG nodes.
+        // Set spread-out forces
+        d3Force={(
+          forceName,
+          force
+        ) => {
+          if (forceName === 'charge') {
+            return d3.forceManyBody().strength(-600).distanceMax(500);
+          }
+          if (forceName === 'link') {
+            return d3.forceLink().id(d => d.id).distance(180).strength(0.4);
+          }
+          if (forceName === 'collision') {
+            return d3.forceCollide(NODE_RADIUS * 4);
+          }
+          return force;
+        }}
         nodeCanvasObject={(node, ctx, globalScale) => {
-          const label = node.label || 'Industry Node';
-          const fontSize = Math.max(12 / globalScale, 4);
+          const label = node.label || 'Industry';
           const color = NODE_COLORS[node.type] || NODE_COLORS.default;
-          const r = Math.max(6, 12 / globalScale);
+          const r = NODE_RADIUS;
 
-          // 1. Draw glowing aura
+          // 1. Outer glow ring
           ctx.beginPath();
-          ctx.arc(node.x, node.y, r * 1.8, 0, 2 * Math.PI, false);
-          ctx.fillStyle = `${color}25`; // 15% opacity glow
+          ctx.arc(node.x, node.y, r * 1.9, 0, 2 * Math.PI, false);
+          ctx.fillStyle = `${color}20`;
           ctx.fill();
 
-          // 2. Draw sharp node center
+          // 2. Node circle
           ctx.beginPath();
           ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
           ctx.fillStyle = color;
           ctx.fill();
-          ctx.lineWidth = r * 0.15;
-          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = 'rgba(255,255,255,0.6)';
           ctx.stroke();
 
-          // 3. Crisp Typography (only if zoomed in reasonably)
-          if (globalScale > 0.8) {
-             ctx.font = `500 ${fontSize}px "Inter", -apple-system, sans-serif`;
-             ctx.textAlign = 'center';
-             ctx.textBaseline = 'top';
-             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-             ctx.shadowColor = '#000';
-             ctx.shadowBlur = 4;
-             ctx.fillText(label, node.x, node.y + r + 4);
-             ctx.shadowBlur = 0; // Reset shadow for next draws
-          }
+          // 3. Always show label — pill background for readability
+          const fontSize = Math.min(11, Math.max(8, 11 / globalScale));
+          ctx.font = `600 ${fontSize}px "Inter", sans-serif`;
+          const textWidth = ctx.measureText(label).width;
+          const padding = 4;
+          const bx = node.x - textWidth / 2 - padding;
+          const by = node.y + r + 3;
+          const bw = textWidth + padding * 2;
+          const bh = fontSize + padding;
+
+          // pill background
+          ctx.fillStyle = 'rgba(15, 17, 20, 0.75)';
+          ctx.beginPath();
+          ctx.roundRect(bx, by, bw, bh, 3);
+          ctx.fill();
+
+          // label text
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+          ctx.fillText(label, node.x, by + padding / 2);
         }}
         nodePointerAreaPaint={(node, color, ctx) => {
           ctx.fillStyle = color;
-          const bckgDimensions = [30, 30].map(n => n + 4); // area
-          ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, NODE_RADIUS + 8, 0, 2 * Math.PI, false);
+          ctx.fill();
         }}
       />
     </div>
@@ -137,6 +160,7 @@ const NetworkPage = ({ user }) => {
     try {
       const res = await industryAPI.getNetwork();
       const data = res.data.data || {};
+      
       setNodes(data.nodes || []);
       setLinks(data.links || []);
     } catch (err) {
