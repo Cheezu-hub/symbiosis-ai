@@ -16,7 +16,7 @@ const TradeRequestsPage = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('incoming');
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     fetchRequests(activeTab);
@@ -96,6 +96,24 @@ const TradeRequestsPage = ({ user }) => {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '2rem' }}>
         <button
+          onClick={() => setActiveTab('all')}
+          style={{
+            padding: '0.75rem 1.5rem',
+            background: 'none',
+            border: 'none',
+            borderBottom: activeTab === 'all' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'all' ? 'var(--primary)' : 'var(--text-secondary)',
+            fontWeight: activeTab === 'all' ? 600 : 400,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <ArrowRightLeft size={18} /> All Trades
+        </button>
+        <button
           onClick={() => setActiveTab('incoming')}
           style={{
             padding: '0.75rem 1.5rem',
@@ -165,7 +183,14 @@ const TradeRequestsPage = ({ user }) => {
                       <h3 style={{ fontSize: '1.25rem', color: 'var(--primary)', marginBottom: '0.25rem' }}>
                         {req.materialType}
                       </h3>
-                      {req.category && <Badge variant="outline">{req.category}</Badge>}
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        {req.category && <Badge variant="outline">{req.category}</Badge>}
+                        {activeTab === 'all' && (
+                          <Badge variant={req.direction === 'incoming' ? "primary" : "secondary"}>
+                            {req.direction === 'incoming' ? 'Incoming' : 'Sent'}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     {getStatusBadge(req.status)}
                   </div>
@@ -191,19 +216,19 @@ const TradeRequestsPage = ({ user }) => {
                 {/* Counterparty Info */}
                 <div>
                    <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    {activeTab === 'incoming' ? 'Requested By' : 'Requested From'}
+                    {req.direction === 'incoming' ? 'Requested By' : 'Requested From'}
                   </h4>
                   <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <p style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '0.25rem' }}>
-                      {activeTab === 'incoming' ? req.sender?.name : req.receiver?.name}
+                      {req.direction === 'incoming' ? req.sender?.name : req.receiver?.name}
                     </p>
-                    {(activeTab === 'incoming' ? req.sender?.type : req.receiver?.type) && (
+                    {(req.direction === 'incoming' ? req.sender?.type : req.receiver?.type) && (
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                        {activeTab === 'incoming' ? req.sender?.type : req.receiver?.type}
+                        {req.direction === 'incoming' ? req.sender?.type : req.receiver?.type}
                       </p>
                     )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                      <MapPin size={16} /> {activeTab === 'incoming' ? req.sender?.location : req.receiver?.location}
+                      <MapPin size={16} /> {req.direction === 'incoming' ? req.sender?.location : req.receiver?.location}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                       <Clock size={16} /> {new Date(req.createdAt).toLocaleDateString()}
@@ -213,7 +238,7 @@ const TradeRequestsPage = ({ user }) => {
 
                 {/* Actions (Only for incoming pending) */}
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  {activeTab === 'incoming' && req.status === 'pending' ? (
+                  {req.direction === 'incoming' && req.status === 'pending' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       <p style={{ textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
                         Action Required
@@ -249,8 +274,8 @@ const TradeRequestsPage = ({ user }) => {
                         {/* Contact panel - revealed for both sender & receiver */}
                         <CoordinationPanel
                           acceptedAt={req.updatedAt}
-                          role={activeTab === 'incoming' ? 'seller' : 'buyer'}
-                          party={activeTab === 'incoming' ? req.sender : req.receiver}
+                          role={req.direction === 'incoming' ? 'seller' : 'buyer'}
+                          party={req.direction === 'incoming' ? req.sender : req.receiver}
                         />
                       </div>
                     ) : req.status === 'rejected' ? (
