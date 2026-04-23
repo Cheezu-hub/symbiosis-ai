@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool, authenticateToken } = require('../models/database');
+const scoringService = require('../services/scoringService');
 
 router.use(authenticateToken);
 
@@ -220,7 +221,8 @@ router.post('/:id/accept', async (req, res) => {
 
         const check = await client.query(
             `SELECT m.*, wl.industry_id as waste_owner, rr.industry_id as resource_owner, 
-                    wl.quantity as waste_quantity, wl.id as wl_id, rr.id as rr_id, m.match_score
+                    wl.quantity as waste_quantity, wl.id as wl_id, rr.id as rr_id, m.match_score,
+                    wl.material_type, wl.price_per_unit
              FROM matches m 
              JOIN waste_listings wl ON m.waste_listing_id=wl.id 
              JOIN resource_requests rr ON m.resource_request_id=rr.id 
@@ -249,20 +251,63 @@ router.post('/:id/accept', async (req, res) => {
             `SELECT id FROM trade_requests WHERE waste_listing_id = $1 AND sender_id = $2 AND receiver_id = $3`,
             [match.wl_id, match.resource_owner, match.waste_owner]
         );
+        let tradeRequestId;
         if (existingTR.rows.length === 0) {
-            await client.query(
+            const trResult = await client.query(
                 `INSERT INTO trade_requests 
                     (waste_listing_id, sender_id, receiver_id, quantity_requested, message, ai_match_score, status, responded_at)
-                 VALUES ($1, $2, $3, $4, $5, $6, 'accepted', CURRENT_TIMESTAMP)`,
+                 VALUES ($1, $2, $3, $4, $5, $6, 'accepted', CURRENT_TIMESTAMP) RETURNING id`,
                 [
                     match.wl_id,
                     match.resource_owner,    // buyer (resource seeker) is the sender
                     match.waste_owner,       // seller (waste provider) is the receiver
                     match.waste_quantity,
                     'Accepted via AI Match Recommendation',
-                    check.rows[0].match_score || null
+                    match.match_score || null
                 ]
             );
+            tradeRequestId = trResult.rows[0].id;
+        } else {
+            tradeRequestId = existingTR.rows[0].id;
+            // Update it to accepted just in case
+            await client.query(`UPDATE trade_requests SET status = 'accepted', responded_at = CURRENT_TIMESTAMP WHERE id = $1`, [tradeRequestId]);
+        }
+
+        // --- Create Transaction and Impact Records ---
+        const existingTx = await client.query(`SELECT id FROM transactions WHERE trade_request_id = $1`, [tradeRequestId]);
+        
+        if (existingTx.rows.length === 0) {
+            // Compute environmental impact
+            const impact = scoringService.estimateEnvironmentalImpact(match.material_type, parseFloat(match.waste_quantity) || 0);
+            const unitPrice = parseFloat(match.price_per_unit) || 0;
+            const totalValue = unitPrice * parseFloat(match.waste_quantity);
+
+            // Create transaction record
+            await client.query(
+                `INSERT INTO transactions (trade_request_id, waste_listing_id, seller_id, buyer_id, quantity, total_value,
+                                            co2_reduction_tons, water_saved_liters, energy_saved_mwh, waste_diverted_tons)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+                [
+                    tradeRequestId, match.wl_id, match.waste_owner, match.resource_owner,
+                    match.waste_quantity, totalValue,
+                    impact.co2ReductionTons, impact.waterSavedLiters, impact.energySavedMwh, impact.wasteDivertedTons
+                ]
+            );
+
+            // Record impact metrics for both companies
+            const today = new Date().toISOString().split('T')[0];
+            for (const industryId of [match.resource_owner, match.waste_owner]) {
+                await client.query(
+                    `INSERT INTO impact_metrics (industry_id, co2_reduced_tons, waste_diverted_tons, water_saved_liters, energy_saved_mwh, recorded_date)
+                     VALUES ($1,$2,$3,$4,$5,$6)
+                     ON CONFLICT (industry_id, recorded_date) DO UPDATE SET
+                       co2_reduced_tons    = impact_metrics.co2_reduced_tons    + EXCLUDED.co2_reduced_tons,
+                       waste_diverted_tons = impact_metrics.waste_diverted_tons + EXCLUDED.waste_diverted_tons,
+                       water_saved_liters  = impact_metrics.water_saved_liters  + EXCLUDED.water_saved_liters,
+                       energy_saved_mwh    = impact_metrics.energy_saved_mwh    + EXCLUDED.energy_saved_mwh`,
+                    [industryId, impact.co2ReductionTons, impact.wasteDivertedTons, impact.waterSavedLiters, impact.energySavedMwh, today]
+                );
+            }
         }
 
         await client.query('COMMIT');
