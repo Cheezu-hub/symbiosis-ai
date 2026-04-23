@@ -125,9 +125,16 @@ const NetworkPage = ({ user }) => {
   const [links, setLinks] = useState([]);
   const [error, setError] = useState('');
   const [tooltip, setTooltip] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     fetchNetwork();
+    
+    const handleMouseMove = (e) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const fetchNetwork = async () => {
@@ -389,6 +396,58 @@ return (
           }}
         >
           <NetworkGraph nodes={nodes} links={links} setTooltip={setTooltip} />
+          
+          {/* Enhanced Interactive Tooltip */}
+          {tooltip && (
+            <div
+              style={{
+                position: 'fixed',
+                left: mousePos.x + 20,
+                top: mousePos.y + 20,
+                zIndex: 1000,
+                pointerEvents: 'none',
+                background: 'rgba(23, 25, 27, 0.85)',
+                backdropFilter: 'blur(12px)',
+                border: `1px solid ${NODE_COLORS[tooltip.type] || 'var(--border)'}`,
+                borderRadius: '12px',
+                padding: '1rem',
+                minWidth: '220px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
+                animation: 'fadeIn 0.2s ease-out'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div 
+                  style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    borderRadius: '50%', 
+                    background: NODE_COLORS[tooltip.type] || NODE_COLORS.default,
+                    boxShadow: `0 0 10px ${NODE_COLORS[tooltip.type] || NODE_COLORS.default}`
+                  }} 
+                />
+                <span style={{ fontWeight: 700, fontSize: '1rem', color: '#fff' }}>
+                  {tooltip.label}
+                </span>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Industry Type</span>
+                  <span style={{ color: 'var(--text-primary)', textTransform: 'capitalize' }}>{tooltip.type}</span>
+                </div>
+                {tooltip.location && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Location</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{tooltip.location}</span>
+                  </div>
+                )}
+                <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem', color: 'var(--primary)', fontStyle: 'italic' }}>
+                  Click node to view company profile
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
