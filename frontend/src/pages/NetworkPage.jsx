@@ -3,6 +3,9 @@ import { Globe, Users, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import { industryAPI } from '../services/api';
 import Card from '../components/ui/Card';
 
+
+import ForceGraph2D from 'react-force-graph-2d';
+
 const NODE_COLORS = {
   steel: '#1F7A8C',
   cement: '#10B981',
@@ -14,15 +17,108 @@ const NODE_COLORS = {
   default: '#64748B'
 };
 
-// Simple force-layout approximation using fixed positions spread in a circle
-const layoutNodes = (nodes) => {
-  const cx = 400, cy = 250, r = 180;
-  return nodes.map((node, i) => ({
-    ...node,
-    x: cx + r * Math.cos((2 * Math.PI * i) / nodes.length),
-    y: cy + r * Math.sin((2 * Math.PI * i) / nodes.length)
-  }));
+const NetworkGraph = ({ nodes, links, setTooltip }) => {
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const containerRef = React.useRef(null);
+  const fgRef = React.useRef(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      setDimensions({
+        width: containerRef.current.clientWidth,
+        height: containerRef.current.clientHeight
+      });
+    }
+    const handleResize = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight
+        });
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Center the graph on load
+  useEffect(() => {
+    if (fgRef.current) {
+      // Small timeout to allow nodes to position
+      setTimeout(() => {
+        fgRef.current.zoomToFit(400, 50);
+      }, 500);
+    }
+  }, [nodes]);
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden' }}>
+      <ForceGraph2D
+        ref={fgRef}
+        width={dimensions.width}
+        height={dimensions.height}
+        graphData={{ nodes, links }}
+        nodeId="id"
+        // Sleek Link Styling
+        linkColor={() => 'rgba(64, 196, 255, 0.25)'}
+        linkWidth={1.5}
+        linkCurvature={0.25}
+        // Animated Flow Particles
+        linkDirectionalParticles={3}
+        linkDirectionalParticleWidth={3}
+        linkDirectionalParticleSpeed={0.005}
+        linkDirectionalParticleColor={() => '#00daf3'}
+        
+        nodeRelSize={6}
+        d3VelocityDecay={0.4}
+        d3AlphaDecay={0.02}
+        backgroundColor="transparent"
+        onNodeHover={(node) => setTooltip(node || null)}
+        
+        // Premium Canvas Rendering
+        nodeCanvasObject={(node, ctx, globalScale) => {
+          const label = node.label || 'Industry Node';
+          const fontSize = Math.max(12 / globalScale, 4);
+          const color = NODE_COLORS[node.type] || NODE_COLORS.default;
+          const r = Math.max(6, 12 / globalScale);
+
+          // 1. Draw glowing aura
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, r * 1.8, 0, 2 * Math.PI, false);
+          ctx.fillStyle = `${color}25`; // 15% opacity glow
+          ctx.fill();
+
+          // 2. Draw sharp node center
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
+          ctx.fillStyle = color;
+          ctx.fill();
+          ctx.lineWidth = r * 0.15;
+          ctx.strokeStyle = '#ffffff';
+          ctx.stroke();
+
+          // 3. Crisp Typography (only if zoomed in reasonably)
+          if (globalScale > 0.8) {
+             ctx.font = `500 ${fontSize}px "Inter", -apple-system, sans-serif`;
+             ctx.textAlign = 'center';
+             ctx.textBaseline = 'top';
+             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+             ctx.shadowColor = '#000';
+             ctx.shadowBlur = 4;
+             ctx.fillText(label, node.x, node.y + r + 4);
+             ctx.shadowBlur = 0; // Reset shadow for next draws
+          }
+        }}
+        nodePointerAreaPaint={(node, color, ctx) => {
+          ctx.fillStyle = color;
+          const bckgDimensions = [30, 30].map(n => n + 4); // area
+          ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+        }}
+      />
+    </div>
+  );
 };
+
 
 const NetworkPage = ({ user }) => {
   const [nodes, setNodes] = useState([]);
@@ -39,7 +135,7 @@ const NetworkPage = ({ user }) => {
     try {
       const res = await industryAPI.getNetwork();
       const data = res.data.data || {};
-      setNodes(layoutNodes(data.nodes || []));
+      setNodes(data.nodes || []);
       setLinks(data.links || []);
     } catch (err) {
       setError('Failed to load network data.');
@@ -287,128 +383,12 @@ return (
             backdropFilter: 'blur(20px)',
             border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
             borderRadius: 'var(--radius-lg, 12px)',
-            padding: '2rem',
-            minHeight: '500px'
+            padding: '1rem',
+            height: '600px',
+            overflow: 'hidden'
           }}
         >
-          <svg width="100%" height="100%" viewBox="0 0 800 500">
-            <defs>
-              <marker
-                id="arrowhead"
-                markerWidth="10"
-                markerHeight="7"
-                refX="10"
-                refY="3.5"
-                orient="auto"
-              >
-                <polygon points="0 0, 10 3.5, 0 7" fill="#1F7A8C" opacity="0.6" />
-              </marker>
-            </defs>
-
-            {/* Links */}
-            {links.map((link, index) => {
-              const source = nodes.find((n) => n.id === link.source);
-              const target = nodes.find((n) => n.id === link.target);
-              if (!source || !target) return null;
-              const midX = (source.x + target.x) / 2;
-              const midY = (source.y + target.y) / 2;
-              return (
-                <g key={index}>
-                  <line
-                    x1={source.x}
-                    y1={source.y}
-                    x2={target.x}
-                    y2={target.y}
-                    stroke="#1F7A8C"
-                    strokeWidth={Math.max(1, (link.value || 100) / 100)}
-                    opacity={0.5}
-                    markerEnd="url(#arrowhead)"
-                  />
-                  <text
-                    x={midX}
-                    y={midY - 6}
-                    textAnchor="middle"
-                    fontSize="10"
-                    fill="var(--text-muted, #64748b)"
-                  >
-                    {link.material}
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Nodes */}
-            {nodes.map((node) => {
-              const color = NODE_COLORS[node.type] || NODE_COLORS.default;
-              return (
-                <g
-                  key={node.id}
-                  style={{ cursor: 'pointer' }}
-                  onMouseEnter={() => setTooltip(node)}
-                  onMouseLeave={() => setTooltip(null)}
-                >
-                  <circle cx={node.x} cy={node.y} r={32} fill={color} opacity={0.9} />
-                  <circle cx={node.x} cy={node.y} r={26} fill="white" opacity={0.15} />
-                  <text
-                    x={node.x}
-                    y={node.y + 48}
-                    textAnchor="middle"
-                    fontSize="11"
-                    fill="var(--text-primary, #e2e2e5)"
-                    fontWeight="600"
-                  >
-                    {node.label.length > 18 ? node.label.slice(0, 16) + '…' : node.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* Tooltip */}
-          {tooltip && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                background: 'var(--bg-secondary, #1a1c1e)',
-                border: '1px solid var(--border, rgba(55, 57, 59, 0.5))',
-                borderRadius: 'var(--radius, 8px)',
-                padding: '1rem',
-                minWidth: '160px',
-                boxShadow: 'var(--shadow-lg, 0 12px 40px rgba(12, 14, 16, 0.4))'
-              }}
-            >
-              <div
-                style={{
-                  fontWeight: 700,
-                  marginBottom: '0.25rem',
-                  color: 'var(--text-primary, #e2e2e5)'
-                }}
-              >
-                {tooltip.label}
-              </div>
-              <div
-                style={{
-                  color: 'var(--text-secondary, #a0a0a5)',
-                  fontSize: '0.85rem',
-                  textTransform: 'capitalize'
-                }}
-              >
-                {tooltip.type}
-              </div>
-              {tooltip.location && (
-                <div
-                  style={{
-                    color: 'var(--text-secondary, #a0a0a5)',
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  {tooltip.location}
-                </div>
-              )}
-            </div>
-          )}
+          <NetworkGraph nodes={nodes} links={links} setTooltip={setTooltip} />
         </div>
       )}
 
