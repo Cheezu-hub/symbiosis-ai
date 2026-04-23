@@ -121,3 +121,5 @@ Industrial symbiosis is a primary pillar of the **Circular Economy**. Traditiona
 This project is licensed under the MIT License.
 
 <!-- sync point 1 -->
+
+<!-- sync point 2 -->
