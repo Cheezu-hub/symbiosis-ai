@@ -1,8 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Bell, Settings, Menu } from 'lucide-react';
+import { notificationAPI } from '../../services/api';
 
 const Topbar = ({ user, onMenuClick, sidebarCollapsed }) => {
   const [searchFocused, setSearchFocused] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await notificationAPI.getUnreadCount();
+        setUnreadCount(res.data.data.count || 0);
+      } catch (err) {
+        console.error('Failed to fetch unread count:', err);
+      }
+    };
+
+    fetchUnreadCount();
+    // Refresh count every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header
@@ -89,18 +107,20 @@ const Topbar = ({ user, onMenuClick, sidebarCollapsed }) => {
             }}
           >
             <Bell size={20} />
-            <span
-              style={{
-                position: 'absolute',
-                top: '2px',
-                right: '2px',
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                background: 'var(--error, #ef4444)',
-                animation: 'pulseDot 2s infinite'
-              }}
-            />
+            {unreadCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '2px',
+                  right: '2px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'var(--error, #ef4444)',
+                  animation: 'pulseDot 2s infinite'
+                }}
+              />
+            )}
           </button>
         </div>
 
