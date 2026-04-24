@@ -70,6 +70,7 @@ app.use('/api/ai',         require('./routes/ai'));
 app.use('/api/trade-requests', require('./routes/tradeRequests'));
 app.use('/api/transactions',   require('./routes/transactions'));
 app.use('/api/notifications',  require('./routes/notifications'));
+app.use('/api/finance',        require('./routes/finance'));
 
 app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });

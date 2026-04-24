@@ -129,4 +129,12 @@ export const notificationAPI = {
   markAllAsRead: () => api.put('/notifications/read-all'),
 };
 
+// Finance APIs
+export const financeAPI = {
+  getDashboard: () => api.get('/finance/dashboard'),
+  calculate: (data) => api.post('/finance/calculate', data),
+  getVendorComparison: () => api.get('/finance/vendor-comparison'),
+  getPlatformStats: () => api.get('/finance/platform-stats'),
+};
+
 export default api;
