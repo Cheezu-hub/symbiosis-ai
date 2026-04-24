@@ -11,8 +11,7 @@ import {
   Recycle,
   X,
   Zap,
-  TrendingDown,
-  Map
+  Navigation
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -27,6 +26,7 @@ const Sidebar = ({
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/logistics', label: 'AI Logistics', icon: Navigation },
     { path: '/waste-listings', label: 'Waste Listings', icon: Recycle },
     { path: '/resource-requests', label: 'Resource Requests', icon: Store },
     { path: '/trade-requests', label: 'Trade Requests', icon: Truck },
@@ -35,8 +35,6 @@ const Sidebar = ({
     { path: '/ai-insights', label: 'AI Insights', icon: Zap },
     { path: '/network', label: 'Network', icon: Globe2 },
     { path: '/impact', label: 'Impact', icon: LayoutDashboard },
-    { path: '/finance', label: 'Finance Intelligence', icon: TrendingDown },
-    { path: '/logistics', label: 'Smart Logistics', icon: Map },
   ];
 
   const sidebarContent = (
