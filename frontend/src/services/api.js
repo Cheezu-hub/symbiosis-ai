@@ -137,4 +137,11 @@ export const financeAPI = {
   getPlatformStats: () => api.get('/finance/platform-stats'),
 };
 
+// Logistics APIs
+export const logisticsAPI = {
+  getDashboard: () => api.get('/logistics/dashboard'),
+  getVendorRecommendations: (distance, weight) => api.get(`/logistics/recommend-vendors?distance=${distance}&weight=${weight}`),
+  bookShipment: (data) => api.post('/logistics/book', data),
+};
+
 export default api;

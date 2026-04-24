@@ -19,6 +19,7 @@ import TransactionsPage from './pages/TransactionsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SupportPage from './pages/SupportPage';
 import FinancePage from './pages/FinancePage';
+import LogisticsPage from './pages/LogisticsPage';
 
 
 // ============================================
@@ -290,6 +291,17 @@ function App() {
             <PrivateRoute isLoggedIn={isLoggedIn}>
               <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
                 <FinancePage user={user} />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/logistics"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Layout isLoggedIn={isLoggedIn} user={user} onLogout={handleLogout}>
+                <LogisticsPage user={user} />
               </Layout>
             </PrivateRoute>
           }

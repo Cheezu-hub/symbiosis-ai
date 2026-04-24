@@ -11,7 +11,8 @@ import {
   Recycle,
   X,
   Zap,
-  TrendingDown
+  TrendingDown,
+  Map
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -35,6 +36,7 @@ const Sidebar = ({
     { path: '/network', label: 'Network', icon: Globe2 },
     { path: '/impact', label: 'Impact', icon: LayoutDashboard },
     { path: '/finance', label: 'Finance Intelligence', icon: TrendingDown },
+    { path: '/logistics', label: 'Smart Logistics', icon: Map },
   ];
 
   const sidebarContent = (
