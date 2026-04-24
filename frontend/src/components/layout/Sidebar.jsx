@@ -10,7 +10,8 @@ import {
   LogOut,
   Recycle,
   X,
-  Zap
+  Zap,
+  TrendingDown
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -33,6 +34,7 @@ const Sidebar = ({
     { path: '/ai-insights', label: 'AI Insights', icon: Zap },
     { path: '/network', label: 'Network', icon: Globe2 },
     { path: '/impact', label: 'Impact', icon: LayoutDashboard },
+    { path: '/finance', label: 'Finance Intelligence', icon: TrendingDown },
   ];
 
   const sidebarContent = (
