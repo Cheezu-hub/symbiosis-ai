@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { transactionAPI } from '../services/api';
 import Card from '../components/ui/Card';
-import { DollarSign, RefreshCw, ArrowUpRight, ArrowDownRight, Leaf, Droplet, Phone, Mail, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { DollarSign, RefreshCw, ArrowUpRight, ArrowDownRight, Leaf, Droplet, Phone, Mail, ExternalLink, Package } from 'lucide-react';
 
 // ─── Inline contact chip ─────────────────────────────────────────────────────
 const ContactChip = ({ icon: Icon, href, label, fallback }) => {
@@ -29,6 +30,7 @@ const ContactChip = ({ icon: Icon, href, label, fallback }) => {
 };
 
 const TransactionsPage = ({ user }) => {
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -236,14 +238,34 @@ const TransactionsPage = ({ user }) => {
                      )}
                   </div>
 
-                  {/* Financials */}
-                  <div style={{ textAlign: 'right' }}>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: isSeller ? 'var(--success)' : 'var(--text-primary)' }}>
-                      {tx.totalValue === 0 ? 'Free' : `${isSeller ? '+' : '-'}₹${tx.totalValue.toLocaleString()}`}
-                    </h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                      {tx.quantity} {tx.unit}
-                    </p>
+                  {/* Financials & Logistics Action */}
+                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: isSeller ? 'var(--success)' : 'var(--text-primary)', margin: 0 }}>
+                        {tx.totalValue === 0 ? 'Free' : `${isSeller ? '+' : '-'}₹${tx.totalValue.toLocaleString()}`}
+                      </h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>
+                        {tx.quantity} {tx.unit}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => navigate('/logistics')}
+                      style={{
+                        background: 'var(--secondary)',
+                        color: '#000',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem'
+                      }}
+                    >
+                      <Package size={14} /> Book AI Logistics
+                    </button>
                   </div>
 
                 </div>

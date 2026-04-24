@@ -8,10 +8,12 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import CoordinationPanel from '../components/ui/CoordinationPanel';
+import { useNavigate } from 'react-router-dom';
 
 // Removed local ContactPanel in favor of reusable CoordinationPanel
 
 const TradeRequestsPage = ({ user }) => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
@@ -277,6 +279,15 @@ const TradeRequestsPage = ({ user }) => {
                           role={req.direction === 'incoming' ? 'seller' : 'buyer'}
                           party={req.direction === 'incoming' ? req.sender : req.receiver}
                         />
+                        <div style={{ marginTop: '1rem' }}>
+                          <Button 
+                            variant="primary" 
+                            style={{ width: '100%', justifyContent: 'center', background: 'var(--secondary)' }}
+                            onClick={() => navigate('/logistics')}
+                          >
+                            <Package size={18} /> Book AI Logistics
+                          </Button>
+                        </div>
                       </div>
                     ) : req.status === 'rejected' ? (
                       <div style={{ textAlign: 'center', color: 'var(--error)', padding: '1rem' }}>
