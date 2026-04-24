@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, Building, AlertCircle } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, MapPin, Package, Building, AlertCircle } from 'lucide-react';
 import { resourceAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -165,9 +165,7 @@ return (
               />
             </div>
           </div>
-          <Button variant="outline">
-            <Filter size={20} /> Filter
-          </Button>
+
         </div>
       </Card>
 
