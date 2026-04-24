@@ -129,19 +129,4 @@ export const notificationAPI = {
   markAllAsRead: () => api.put('/notifications/read-all'),
 };
 
-// Finance APIs
-export const financeAPI = {
-  getDashboard: () => api.get('/finance/dashboard'),
-  calculate: (data) => api.post('/finance/calculate', data),
-  getVendorComparison: () => api.get('/finance/vendor-comparison'),
-  getPlatformStats: () => api.get('/finance/platform-stats'),
-};
-
-// Logistics APIs
-export const logisticsAPI = {
-  getDashboard: () => api.get('/logistics/dashboard'),
-  getVendorRecommendations: (distance, weight) => api.get(`/logistics/recommend-vendors?distance=${distance}&weight=${weight}`),
-  bookShipment: (data) => api.post('/logistics/book', data),
-};
-
 export default api;
