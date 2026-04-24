@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, MapPin, Package, AlertCircle, Zap, Loader, Briefcase, Star } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, MapPin, Package, AlertCircle, Zap, Loader, Briefcase, Star } from 'lucide-react';
 import { wasteAPI, aiAPI, tradeAPI } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -259,9 +259,7 @@ return (
               />
             </div>
           </div>
-          <Button variant="outline">
-            <Filter size={20} /> Filter
-          </Button>
+
         </div>
       </Card>
 
