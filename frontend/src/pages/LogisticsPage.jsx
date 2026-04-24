@@ -1,234 +1,326 @@
-import React, { useState, useEffect } from 'react';
-import { Truck, Map, Box, CheckCircle, Clock, Zap, AlertTriangle, ArrowRight, Shield, Leaf } from 'lucide-react';
-import { logisticsAPI } from '../services/api';
+import React, { useState } from 'react';
+import { Truck, MapPin, Package, Clock, ShieldCheck, Zap, Navigation, DollarSign, Leaf, Award, Search, ChevronRight, Activity, Filter, FileText } from 'lucide-react';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
 
-const fmt = (n) => '₹' + Math.round(n || 0).toLocaleString('en-IN');
+// Mock Data for Prototype
+const MOCK_SHIPMENTS = [
+  { id: 'SHP-9021', origin: 'Mumbai, MH', destination: 'Pune, MH', status: 'In Transit', material: 'Scrap Metal', quantity: '5 Tons', eta: '2 Hours', vendor: 'EcoFreight Ltd.' },
+  { id: 'SHP-9022', origin: 'Surat, GJ', destination: 'Ahmedabad, GJ', status: 'Driver Assigned', material: 'Textile Waste', quantity: '2.5 Tons', eta: 'Tomorrow', vendor: 'FastMove Logistics' },
+  { id: 'SHP-9023', origin: 'Bengaluru, KA', destination: 'Chennai, TN', status: 'Delivered', material: 'E-Waste', quantity: '1.2 Tons', eta: 'Delivered', vendor: 'GreenTransit' }
+];
 
-function KpiCard({ icon: Icon, label, value, sub, color }) {
-  return (
-    <div style={{
-      background: 'var(--bg-card)', border: `1px solid ${color}33`,
-      borderRadius: 16, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
-      transition: 'all 0.3s ease', cursor: 'default'
-    }}
-      onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
-      onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ background: `${color}22`, borderRadius: 10, padding: '0.6rem', color }}>
-          <Icon size={22} />
-        </div>
-      </div>
-      <div>
-        <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.1 }}>{value}</div>
-        <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: 4 }}>{label}</div>
-      </div>
-      {sub && <div style={{ fontSize: '0.78rem', color, fontWeight: 600 }}>{sub}</div>}
-    </div>
-  );
-}
+const MOCK_VENDORS = [
+  { id: 'V-01', name: 'EcoFreight Ltd.', rating: 4.9, cost: '₹12,500', speed: 'Fast', emissions: 'Low', features: ['Eco-friendly', 'Real-time Tracking'], highlight: 'Lowest Carbon' },
+  { id: 'V-02', name: 'FastMove Logistics', rating: 4.8, cost: '₹14,200', speed: 'Same Day', emissions: 'Medium', features: ['Express', 'Insured'], highlight: 'Fastest Delivery' },
+  { id: 'V-03', name: 'ValueTransport', rating: 4.5, cost: '₹9,800', speed: '2 Days', emissions: 'High', features: ['Budget', 'Heavy Load'], highlight: 'Lowest Cost' },
+  { id: 'V-04', name: 'GreenTransit', rating: 4.9, cost: '₹13,000', speed: 'Next Day', emissions: 'Low', features: ['Electric Fleet', 'Verified'], highlight: 'Best Rated' }
+];
 
-function VendorRecommendation() {
-  const [distance, setDistance] = useState(250);
-  const [weight, setWeight] = useState(15);
-  const [vendors, setVendors] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [booking, setBooking] = useState(null);
-
-  const fetchRecommendations = async () => {
-    setLoading(true);
-    try {
-      const res = await logisticsAPI.getVendorRecommendations(distance, weight);
-      setVendors(res.data.data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBook = async (vendorId) => {
-    setBooking(vendorId);
-    try {
-      await logisticsAPI.bookShipment({ transactionId: 'dummy-tx', vendorId, routeType: 'standard' });
-      setTimeout(() => {
-        alert('Shipment Booked Successfully!');
-        setBooking(null);
-      }, 800);
-    } catch (e) {
-      setBooking(null);
-      alert('Booking failed');
-    }
-  };
+const LogisticsPage = ({ user }) => {
+  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, marketplace, tracking
 
   return (
-    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1.25rem' }}>
-        <Map size={20} color="#00daf3" />
-        <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>AI Vendor Recommendation Engine</h3>
-      </div>
-      
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 150 }}>
-          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Distance (km)</label>
-          <input type="number" value={distance} onChange={e => setDistance(e.target.value)}
-            style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: 8, padding: '0.55rem 0.75rem', color: 'var(--text-primary)' }} />
+    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', fontWeight: 700, margin: 0, color: 'var(--text-primary, #f3f4f6)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Truck size={32} color="var(--primary, #58e077)" /> AI-Powered Logistics
+          </h1>
+          <p style={{ color: 'var(--text-secondary, #a0a0a5)', margin: '0.5rem 0 0' }}>
+            Execute trades seamlessly with smart routing, vendor comparison, and live tracking.
+          </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 150 }}>
-          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Weight (tons)</label>
-          <input type="number" value={weight} onChange={e => setWeight(e.target.value)}
-            style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: 8, padding: '0.55rem 0.75rem', color: 'var(--text-primary)' }} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1, minWidth: 150 }}>
-          <button onClick={fetchRecommendations} disabled={loading}
-            style={{ width: '100%', background: 'linear-gradient(135deg, #00daf3, #00b4d8)', color: '#000', border: 'none', borderRadius: 8, padding: '0.65rem 1rem', fontWeight: 700, cursor: 'pointer' }}>
-            {loading ? 'Analyzing Routes...' : 'Get AI Recommendations'}
-          </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Button variant="outline" onClick={() => setActiveTab('dashboard')} style={{ borderColor: activeTab === 'dashboard' ? 'var(--primary)' : '' }}>
+            <Activity size={18} /> Overview
+          </Button>
+          <Button variant="outline" onClick={() => setActiveTab('marketplace')} style={{ borderColor: activeTab === 'marketplace' ? 'var(--primary)' : '' }}>
+            <Search size={18} /> Find Transport
+          </Button>
+          <Button variant="primary" onClick={() => setActiveTab('tracking')}>
+            <MapPin size={18} /> Live Tracking
+          </Button>
         </div>
       </div>
 
-      {vendors.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {vendors.map(v => (
-            <div key={v.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'var(--bg-tertiary)', borderRadius: 12, border: `1px solid ${v.tag ? '#00daf355' : 'var(--border)'}` }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{v.name}</span>
-                  {v.tag && <span style={{ background: 'rgba(0,218,243,0.15)', color: '#00daf3', padding: '2px 8px', borderRadius: 12, fontSize: '0.7rem', fontWeight: 600 }}>{v.tag}</span>}
+      {/* Tabs Content */}
+      {activeTab === 'dashboard' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* Metrics Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            <Card style={{ padding: '1.5rem', background: 'linear-gradient(145deg, rgba(30, 32, 34, 0.8), rgba(40, 42, 44, 0.8))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ padding: '0.75rem', background: 'rgba(88, 224, 119, 0.1)', borderRadius: '12px' }}>
+                  <Truck size={24} color="var(--primary)" />
                 </div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', gap: 16 }}>
-                  <span>⭐ {v.rating}</span>
-                  <span>🌱 CO2: {v.co2Rating}</span>
-                  <span>⏱️ Est: {v.estimatedDeliveryDays} days</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Active Shipments</h3>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>12</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#58e077' }}>{fmt(v.totalCost)}</div>
+            </Card>
+            <Card style={{ padding: '1.5rem', background: 'linear-gradient(145deg, rgba(30, 32, 34, 0.8), rgba(40, 42, 44, 0.8))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ padding: '0.75rem', background: 'rgba(0, 218, 243, 0.1)', borderRadius: '12px' }}>
+                  <DollarSign size={24} color="var(--secondary)" />
                 </div>
-                <button 
-                  onClick={() => handleBook(v.id)}
-                  disabled={booking === v.id}
-                  style={{ background: 'transparent', border: '1px solid #58e077', color: '#58e077', padding: '0.5rem 1.5rem', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>
-                  {booking === v.id ? 'Booking...' : 'Book Transport'}
-                </button>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Freight Savings</h3>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>₹45,200</div>
+                </div>
               </div>
+            </Card>
+            <Card style={{ padding: '1.5rem', background: 'linear-gradient(145deg, rgba(30, 32, 34, 0.8), rgba(40, 42, 44, 0.8))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ padding: '0.75rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px' }}>
+                  <Clock size={24} color="#3b82f6" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>On-Time Delivery</h3>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>98.5%</div>
+                </div>
+              </div>
+            </Card>
+            <Card style={{ padding: '1.5rem', background: 'linear-gradient(145deg, rgba(30, 32, 34, 0.8), rgba(40, 42, 44, 0.8))' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ padding: '0.75rem', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px' }}>
+                  <Leaf size={24} color="#10b981" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>CO2 Saved (Routes)</h3>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>4.2 Tons</div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Recent Shipments Table */}
+          <Card style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Recent Shipments</h2>
+              <Button variant="outline" size="small">View All</Button>
             </div>
-          ))}
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)', textAlign: 'left' }}>
+                    <th style={{ padding: '1rem' }}>ID</th>
+                    <th style={{ padding: '1rem' }}>Route</th>
+                    <th style={{ padding: '1rem' }}>Material</th>
+                    <th style={{ padding: '1rem' }}>Vendor</th>
+                    <th style={{ padding: '1rem' }}>Status</th>
+                    <th style={{ padding: '1rem' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MOCK_SHIPMENTS.map((shipment) => (
+                    <tr key={shipment.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '1rem', fontWeight: 500 }}>{shipment.id}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span>{shipment.origin}</span>
+                          <ChevronRight size={14} color="var(--text-secondary)" />
+                          <span>{shipment.destination}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>{shipment.material} ({shipment.quantity})</td>
+                      <td style={{ padding: '1rem' }}>{shipment.vendor}</td>
+                      <td style={{ padding: '1rem' }}>
+                        <span style={{ 
+                          padding: '0.25rem 0.75rem', 
+                          borderRadius: '999px', 
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          backgroundColor: shipment.status === 'Delivered' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                          color: shipment.status === 'Delivered' ? '#10b981' : '#3b82f6'
+                        }}>
+                          {shipment.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <Button variant="outline" size="small" onClick={() => setActiveTab('tracking')}>Track</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </div>
       )}
-    </div>
-  );
-}
 
-export default function LogisticsPage() {
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('dashboard');
-
-  useEffect(() => {
-    logisticsAPI.getDashboard().then(res => setDashboard(res.data.data)).finally(() => setLoading(false));
-  }, []);
-
-  const kpis = dashboard?.kpis || {};
-  const shipments = dashboard?.recentShipments || [];
-  const suggestions = dashboard?.suggestions || [];
-
-  const getStatusColor = (s) => {
-    switch (s) {
-      case 'Delivered': return '#58e077';
-      case 'In Transit': return '#00daf3';
-      case 'Booking Confirmed': return '#a78bfa';
-      default: return '#f59e0b';
-    }
-  };
-
-  return (
-    <div className="page-container fade-in-up">
-      <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-          <div style={{ background: 'rgba(0,218,243,0.15)', borderRadius: 12, padding: '0.6rem', color: '#00daf3' }}>
-            <Truck size={26} />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, background: 'linear-gradient(135deg, #00daf3, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Smart Logistics & Execution
-            </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              AI-powered transport matching · Route optimization · Live tracking
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: '2rem' }}>
-        {['dashboard', 'book'].map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', textTransform: 'capitalize',
-              background: tab === t ? 'linear-gradient(135deg, #00daf3, #00b4d8)' : 'var(--bg-tertiary)',
-              color: tab === t ? '#000' : 'var(--text-secondary)' }}>
-            {t === 'dashboard' ? '📊 Dashboard' : '🚚 Book Transport'}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}><div className="spinner" /></div>
-      ) : tab === 'dashboard' ? (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-            <KpiCard icon={Box} label="Active Shipments" value={kpis.activeShipments} color="#f59e0b" />
-            <KpiCard icon={CheckCircle} label="Completed Deliveries" value={kpis.completedShipments} color="#58e077" />
-            <KpiCard icon={Truck} label="Total Logistics Spend" value={fmt(kpis.totalLogisticsSpend)} color="#a78bfa" />
-            <KpiCard icon={Zap} label="Freight Savings (Opt.)" value={fmt(kpis.avgFreightSavings)} sub="Via AI Routes" color="#00daf3" />
-            <KpiCard icon={Clock} label="On-Time Delivery" value={`${kpis.onTimeDeliveryPct}%`} color="#10b981" />
-            <KpiCard icon={Leaf} label="CO2 Reduced (Routes)" value={`${kpis.co2ReducedRoutes}t`} color="#2ebd59" />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Live Shipments</h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table className="data-table">
-                  <thead><tr>
-                    <th>Material</th><th>Route</th><th>Distance</th><th>Cost</th><th>Status</th>
-                  </tr></thead>
-                  <tbody>
-                    {shipments.map(s => (
-                      <tr key={s.id}>
-                        <td style={{ fontWeight: 600 }}>{s.materialType} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({s.quantity}{s.unit})</span></td>
-                        <td style={{ fontSize: '0.85rem' }}>{s.origin} <ArrowRight size={12} style={{ margin: '0 4px', verticalAlign: 'middle' }}/> {s.destination}</td>
-                        <td style={{ fontSize: '0.85rem' }}>{s.distance} km</td>
-                        <td style={{ fontWeight: 600 }}>{fmt(s.cost)}</td>
-                        <td>
-                          <span style={{ background: `${getStatusColor(s.status)}22`, color: getStatusColor(s.status), padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 600 }}>
-                            {s.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+      {activeTab === 'marketplace' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {/* AI Recommendation Banner */}
+          <Card style={{ padding: '2rem', background: 'linear-gradient(to right, rgba(88, 224, 119, 0.1), rgba(0, 218, 243, 0.1))', border: '1px solid rgba(88, 224, 119, 0.3)' }}>
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+              <div style={{ padding: '1rem', background: 'linear-gradient(135deg, var(--primary), var(--secondary))', borderRadius: '16px', color: '#000' }}>
+                <Zap size={32} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h2 style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>AI Smart Routing Enabled</h2>
+                <p style={{ margin: '0 0 1rem 0', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  Based on your trade of <strong>5 Tons of Scrap Metal</strong> from Mumbai to Pune, our AI has analyzed 40+ vendors. We recommend a shared-load route to reduce costs by 18% and lower carbon emissions.
+                </p>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}><CheckCircleIcon color="var(--primary)" /> 12 Matches Found</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}><CheckCircleIcon color="var(--primary)" /> Route Optimized</span>
+                </div>
               </div>
             </div>
+          </Card>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>AI Alerts & Suggestions</h3>
-              {suggestions.map((s, i) => (
-                <div key={i} style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem', display: 'flex', gap: '0.8rem' }}>
-                  <span style={{ fontSize: '1.2rem' }}>{s.icon}</span>
+          {/* Vendor Comparison */}
+          <h2 style={{ fontSize: '1.25rem', margin: '1rem 0 0 0' }}>Top Recommended Transport Vendors</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            {MOCK_VENDORS.map(vendor => (
+              <Card key={vendor.id} style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+                {/* Highlight Badge */}
+                <div style={{ 
+                  position: 'absolute', top: '12px', right: '-30px', background: 'var(--primary)', color: '#000', 
+                  padding: '4px 40px', transform: 'rotate(45deg)', fontSize: '0.75rem', fontWeight: 700 
+                }}>
+                  {vendor.highlight}
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 2 }}>{s.title}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{s.desc}</div>
+                    <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1.25rem' }}>{vendor.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                      <Award size={16} color="#fbbf24" /> {vendor.rating} / 5.0 Rating
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', padding: '1rem 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Estimated Cost:</span>
+                    <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{vendor.cost}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Delivery Speed:</span>
+                    <span>{vendor.speed}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Carbon Emissions:</span>
+                    <span style={{ color: vendor.emissions === 'Low' ? '#10b981' : '#f59e0b' }}>{vendor.emissions}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                  {vendor.features.map(f => (
+                    <span key={f} style={{ padding: '0.25rem 0.75rem', background: 'var(--bg-secondary)', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      {f}
+                    </span>
+                  ))}
+                </div>
+
+                <Button variant="primary" style={{ width: '100%' }}>Book Shipment</Button>
+              </Card>
+            ))}
           </div>
-        </>
-      ) : (
-        <VendorRecommendation />
+        </div>
+      )}
+
+      {activeTab === 'tracking' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem' }}>
+          {/* Map/Route Area */}
+          <Card style={{ padding: '1.5rem', minHeight: '600px', display: 'flex', flexDirection: 'column' }}>
+            <h2 style={{ fontSize: '1.25rem', margin: '0 0 1rem 0' }}>Live Route Tracking: SHP-9021</h2>
+            <div style={{ 
+              flex: 1, 
+              background: 'url("https://www.transparenttextures.com/patterns/cubes.png") rgba(30,32,34,0.5)', 
+              borderRadius: '12px',
+              border: '1px solid var(--border)',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }}>
+              {/* Mock Map Element */}
+              <div style={{ position: 'absolute', top: '20px', left: '20px', background: 'rgba(0,0,0,0.7)', padding: '1rem', borderRadius: '12px', backdropFilter: 'blur(10px)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <Navigation size={16} color="var(--primary)" />
+                  <span style={{ fontWeight: 600 }}>Driver: Ramesh S.</span>
+                </div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Vehicle: MH 12 AB 1234 (Heavy Truck)</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Speed: 65 km/h</div>
+              </div>
+
+              {/* Decorative Map Path */}
+              <svg width="100%" height="100%" style={{ position: 'absolute' }}>
+                <path d="M 100,500 Q 300,400 400,200 T 700,100" fill="none" stroke="var(--primary)" strokeWidth="4" strokeDasharray="10, 10" />
+                <circle cx="100" cy="500" r="8" fill="#fff" stroke="var(--primary)" strokeWidth="4" />
+                <circle cx="700" cy="100" r="8" fill="#fff" stroke="var(--error, #ef4444)" strokeWidth="4" />
+                {/* Truck icon on path */}
+                <g transform="translate(400, 200)">
+                  <circle cx="0" cy="0" r="15" fill="var(--secondary)" />
+                  <Truck size={16} color="#000" x="-8" y="-8" />
+                </g>
+              </svg>
+            </div>
+          </Card>
+
+          {/* Tracking Status */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <Card style={{ padding: '1.5rem' }}>
+              <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.1rem' }}>Shipment Status</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', position: 'relative' }}>
+                {/* Vertical Line */}
+                <div style={{ position: 'absolute', left: '11px', top: '10px', bottom: '10px', width: '2px', background: 'var(--border)' }}></div>
+                
+                {[
+                  { title: 'Booking Confirmed', time: 'Oct 24, 09:00 AM', active: true, done: true },
+                  { title: 'Driver Assigned', time: 'Oct 24, 09:30 AM', active: true, done: true },
+                  { title: 'Pickup Completed', time: 'Oct 24, 11:00 AM', active: true, done: true },
+                  { title: 'In Transit', time: 'Currently Active', active: true, done: false },
+                  { title: 'Near Destination', time: 'Est. 01:30 PM', active: false, done: false },
+                  { title: 'Delivered', time: 'Est. 02:00 PM', active: false, done: false }
+                ].map((step, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
+                    <div style={{ 
+                      width: '24px', height: '24px', borderRadius: '50%', 
+                      background: step.done ? 'var(--primary)' : (step.active ? 'var(--secondary)' : 'var(--bg-secondary)'),
+                      border: `2px solid ${step.active || step.done ? 'transparent' : 'var(--border)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {step.done && <CheckCircleIcon size={12} color="#000" />}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: step.active ? 700 : 500, color: step.active ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                        {step.title}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{step.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card style={{ padding: '1.5rem' }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>Documents</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <Button variant="outline" style={{ justifyContent: 'flex-start' }}><FileText size={16} /> E-Way Bill</Button>
+                <Button variant="outline" style={{ justifyContent: 'flex-start' }}><FileText size={16} /> Material Manifest</Button>
+                <Button variant="outline" style={{ justifyContent: 'flex-start' }}><FileText size={16} /> Delivery Receipt (Pending)</Button>
+              </div>
+            </Card>
+          </div>
+        </div>
       )}
     </div>
   );
-}
+};
+
+// Helper component
+const CheckCircleIcon = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+  </svg>
+);
+
+export default LogisticsPage;
