@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Truck, MapPin, Package, Clock, ShieldCheck, Zap, Navigation, DollarSign, Leaf, Award, Search, ChevronRight, Activity, Filter, FileText } from 'lucide-react';
+import { Truck, MapPin, Clock, Zap, Navigation, DollarSign, Leaf, Award, Search, ChevronRight, Activity, FileText } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
