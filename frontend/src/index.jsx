@@ -30,7 +30,7 @@ root.render(
 // Console Welcome Message
 // ============================================
 console.log(
-  '%c⚡ SymbioTech Industrial Command%c v1.0',
+  '%c🌿 SymbioTech Industrial Command%c v1.0',
   'background: linear-gradient(135deg, #58e077, #2ebd59); color: #002108; font-weight: bold; padding: 4px 8px; border-radius: 4px 0 0 4px;',
   'background: #1a1c1e; color: #e2e2e5; padding: 4px 8px; border-radius: 0 4px 4px 0;'
 );

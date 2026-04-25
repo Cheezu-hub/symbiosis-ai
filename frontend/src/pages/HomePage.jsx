@@ -123,7 +123,7 @@ const HomePage = ({ onLogin }) => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Recycle size={28} color="var(--primary, #58e077)" />
+          <img src="/logo.png" alt="SymbioTech Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
           <span
             style={{
               fontSize: '1.25rem',
@@ -711,7 +711,7 @@ const HomePage = ({ onLogin }) => {
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <Recycle size={24} color="var(--primary, #58e077)" />
+              <img src="/logo.png" alt="SymbioTech Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
               <span
                 style={{
                   fontSize: '1.1rem',

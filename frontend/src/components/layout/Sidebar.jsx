@@ -10,7 +10,8 @@ import {
   LogOut,
   Recycle,
   X,
-  Zap
+  Zap,
+  Navigation
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -25,6 +26,7 @@ const Sidebar = ({
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/logistics', label: 'AI Logistics', icon: Navigation },
     { path: '/waste-listings', label: 'Waste Listings', icon: Recycle },
     { path: '/resource-requests', label: 'Resource Requests', icon: Store },
     { path: '/trade-requests', label: 'Trade Requests', icon: Truck },

@@ -10,7 +10,8 @@ import {
   ArrowRight,
   Package,
   Wind,
-  Globe2
+  Globe2,
+  Truck
 } from 'lucide-react';
 import {
   BarChart,
@@ -919,6 +920,36 @@ const DashboardPage = ({ user }) => {
               }}
             >
               View environmental data
+            </p>
+          </Card>
+        </Link>
+
+        <Link to="/logistics" style={{ textDecoration: 'none' }}>
+          <Card style={{ textAlign: 'center', cursor: 'pointer' }}>
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                margin: '0 auto 1rem',
+                borderRadius: 'var(--radius, 8px)',
+                background: 'rgba(59, 130, 246, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Truck size={28} color="#3b82f6" />
+            </div>
+            <h4 style={{ marginBottom: '0.5rem', color: 'var(--text-primary, #e2e2e5)' }}>
+              AI Logistics
+            </h4>
+            <p
+              style={{
+                color: 'var(--text-secondary, #a0a0a5)',
+                fontSize: '0.9rem'
+              }}
+            >
+              Track & route shipments
             </p>
           </Card>
         </Link>
