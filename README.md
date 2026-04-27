@@ -1,37 +1,50 @@
-# SymbioTech — Industrial Symbiosis Platform
+# ♻️ Symbiosis AI — Industrial Symbiosis Platform
 
-**Transforming Industrial Waste into Sustainable Resources.**
+> **Transforming Industrial Waste into Sustainable Resources.**
 
-SymbioTech is a comprehensive digital platform designed to facilitate **Industrial Symbiosis** (IS). It empowers businesses to list their waste products and find other industries that can use those by-products as raw materials. By closing the loop on industrial processes, SymbioTech reduces landfill waste, lowers carbon emissions, and creates new economic value for businesses.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Symbiosis%20AI-blue?style=for-the-badge&logo=vercel)](https://symbiosis-ai.vercel.app/)
+
+Symbiosis AI is a cutting-edge digital platform designed to facilitate **Industrial Symbiosis** (IS). It empowers businesses to list their waste products and discover other industries that can utilize those by-products as raw materials. By closing the loop on industrial processes, Symbiosis AI reduces landfill waste, lowers carbon emissions, and creates new economic value through a circular economy.
 
 ---
 
 ## 🌟 Key Features
 
 ### 1. **Resource Marketplace**
-*   **Waste Listings:** Post detailed information about available by-products, including material type, quantity, location, and price.
+*   **Waste Listings:** Post detailed information about available by-products, including material type, quantity, and location.
 *   **Resource Requests:** Specify raw material requirements to discover potential matches from other industries.
-*   **Categories:** Support for plastic, metal, organic waste, energy (heat/steam), water, and more.
+*   **Categorization:** Support for plastic, metal, organic waste, energy (heat/steam), water, and more.
 
 ### 2. **AI-Driven Matchmaking**
-*   **Intelligent Scoring:** Automatically matches waste listings with resource requests based on material compatibility, quantity, and geographic proximity.
-*   **AI Insights:** Provides data-driven recommendations and visualization of potential symbiosis opportunities.
-*   **Match Notifications:** Real-time updates when the AI engine finds a new compatible partner.
+*   **Intelligent Scoring:** Automatically matches waste listings with resource requests based on material compatibility and geographic proximity.
+*   **Predictive Insights:** AI-driven recommendations for potential symbiosis opportunities.
+*   **Real-time Alerts:** Notifications when a new compatible partner is found.
 
-### 3. **Trade & Transaction Management**
-*   **Interactive Negotiations:** Securely negotiate and manage exchange requests between companies.
-*   **Financial Ledger:** Track all transactions, pricing, and quantities in a centralized ledger.
-*   **Status Tracking:** Monitor the lifecycle of a trade from request to completion.
+### 3. **Dynamic Network Visualization**
+*   **Resource Flow Graph:** Interactive force-directed graph showing real-time resource exchange relationships between industries.
+*   **Spatial Analysis:** Visualize nearby industries to optimize local clusters and minimize transport costs.
 
-### 4. **Environmental Impact Tracking**
-*   **Sustainability Score:** Every industry receives a score based on their participation in the circular economy.
-*   **Impact Metrics:** Visualize CO2 reduction (tons), waste diverted from landfill (tons), and energy/water savings.
-*   **Dynamic Reports:** Generate automated sustainability reports for CSR initiatives.
+### 4. **Logistics & Supply Chain Optimization**
+*   **Route Optimization:** Calculate the most efficient transport routes for resource exchanges.
+*   **Distance Tracking:** Automated calculation of transport distances to estimate logistics costs and carbon footprint.
 
-### 5. **Enhanced User Experience**
-*   **Interactive Map/Network:** View nearby industries and resource flows to optimize logistics.
-*   **Profile & Settings:** Manage company details, notification preferences, and transport radius.
-*   **Custom Notifications:** Stay updated with a dedicated notification center for all account activities.
+### 5. **Sustainability & Impact Analytics**
+*   **CO2 Reduction Tracking:** Real-time metrics on carbon emissions saved through material reuse.
+*   **Waste Diversion:** Monitor the total tonnage of waste diverted from landfills.
+*   **CSR Reporting:** Generate automated sustainability reports for corporate responsibility initiatives.
+
+---
+
+## 🚀 Core Modules
+
+| Module | Description |
+| :--- | :--- |
+| **Dashboard** | Centralized view of recent trades, matches, and environmental impact. |
+| **Marketplace** | The hub for browsing and posting waste/resource listings. |
+| **Network** | A visual map of industrial connections and resource flows. |
+| **Logistics** | Tools for planning and optimizing the transport of materials. |
+| **Impact** | Detailed analytics on sustainability goals and performance. |
+| **Transactions** | A secure ledger for managing trade requests and completed exchanges. |
 
 ---
 
@@ -39,11 +52,12 @@ SymbioTech is a comprehensive digital platform designed to facilitate **Industri
 
 | Component | Technology |
 | :--- | :--- |
-| **Frontend** | React, Tailwind CSS, Lucide Icons, Recharts |
+| **Frontend** | React, Tailwind CSS, Lucide Icons, Recharts, Framer Motion |
 | **Backend** | Node.js, Express.js |
 | **Database** | PostgreSQL |
 | **AI Engine** | Python (Scikit-learn, Pandas) |
 | **Authentication** | JSON Web Tokens (JWT) |
+| **Deployment** | Vercel (Frontend), Render (Backend) |
 
 ---
 
@@ -51,42 +65,34 @@ SymbioTech is a comprehensive digital platform designed to facilitate **Industri
 
 ```text
 ism_pg/
-├── ai-engine/        # Python AI matching logic and data processing
+├── ai-engine/        # Python AI matching logic and impact analytics
 ├── backend/          # Node.js + Express API server
-│   ├── routes/       # API route definitions
-│   ├── services/     # Business logic and DB interactions
-│   └── server.js     # Entry point
+│   ├── routes/       # API route definitions (Waste, Resources, Trades, etc.)
+│   ├── services/     # Business logic and Database interactions
+│   └── server.js     # Server entry point
 ├── database/         # SQL Schema, migrations, and seed data
-├── frontend/         # React Application (UI + components)
+├── frontend/         # React Application
 │   ├── src/
-│   │   ├── components/ # Reusable UI and Layout components
-│   │   ├── pages/      # Full-page views
+│   │   ├── components/ # Reusable UI components (Modals, Charts, Layout)
+│   │   ├── pages/      # Feature-specific page views
 │   │   └── services/   # Frontend API client
 └── README.md         # Project documentation
 ```
 
 ---
 
-## Key Features
-
-- **Industrial Symbiosis Matching**: AI-driven engine that connects waste outputs from one industry to the resource needs of another.
-- **Dynamic Network Visualization**: Interactive force-directed graph showing real-time resource exchange relationships.
-- **Impact Analytics**: Real-time tracking of CO2 reduction and waste diversion metrics.
-
-## Getting Started (Local Setup)
+## ⚙️ Getting Started (Local Setup)
 
 ### 1. Prerequisites
-*   Node.js (v18+)
-*   PostgreSQL (v14+)
-*   Python (v3.8+) — *Required for the AI Engine*
-*   npm or yarn
+*   **Node.js** (v18+)
+*   **PostgreSQL** (v14+)
+*   **Python** (v3.8+) — *Required for AI Engine features*
 
 ### 2. Backend Setup
 ```bash
 cd backend
 npm install
-# Create local .env from example and configure your PostgreSQL credentials
-cp .env.example .env
+# Configure your .env file with PostgreSQL credentials
 npm run dev
 ```
 
@@ -94,11 +100,11 @@ npm run dev
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
-> Opens at **http://localhost:3000**
+> The app will be available at **http://localhost:5173** (if using Vite) or **http://localhost:3000**.
 
-### 4. AI Engine (Optional for Core UI)
+### 4. AI Engine Setup
 ```bash
 cd ai-engine
 pip install -r requirements.txt
@@ -107,29 +113,15 @@ python matching.py
 
 ---
 
-## 🌍 Why SymbioTech?
+## 🌍 The Impact of Industrial Symbiosis
 
-Industrial symbiosis is a primary pillar of the **Circular Economy**. Traditionally, waste disposal is a cost center. SymbioTech turns it into a profit center by:
+Industrial symbiosis is a primary pillar of the **Circular Economy**. Traditionally, waste disposal is a cost center. Symbiosis AI turns it into a profit center by:
 1.  **Reducing Disposal Costs:** Diverting waste from expensive landfills.
-2.  **Lowering Raw Material Costs:** Sourcing repurposed materials cheaper than virgin ones.
-3.  **Cutting CO2 Emissions:** Reducing the need for long-distance logistics and virgin material extraction.
+2.  **Lowering Raw Material Costs:** Sourcing repurposed materials at a lower cost than virgin ones.
+3.  **Cutting CO2 Emissions:** Reducing the environmental footprint of long-distance logistics and raw material extraction.
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License.
-
-<!-- sync point 1 -->
-
-<!-- sync point 2 -->
-
-<!-- sync point 3 -->
-
-<!-- sync point 4 -->
-
-<!-- sync point 5 -->
-
-<!-- sync point 6 -->
-
-<!-- sync point 7 -->
